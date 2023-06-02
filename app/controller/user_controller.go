@@ -27,7 +27,7 @@ func Register(c echo.Context) error {
 	user := model.User{
 		Username: request.Username,
 		Password: string(hashedPassword),
-		Role:     "user",
+		Role:     "admin",
 	}
 
 	if err := config.Db.Create(&user).Error; err != nil {
