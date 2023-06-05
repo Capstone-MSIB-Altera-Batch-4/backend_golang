@@ -1,16 +1,17 @@
 package routes
 
 import (
-	"github.com/labstack/echo/v4"
 	"point-of-sale/app/controller"
 	"point-of-sale/app/controller/admin"
 	"point-of-sale/app/middleware"
+
+	"github.com/labstack/echo/v4"
 )
 
 func Route(e *echo.Echo) {
 	api := e.Group("api/v1")
 
-	//Role cashier
+	// Role cashier
 	RouteCashier := api.Group("/cashier")
 	RouteCashier.POST("/login", controller.LoginCashier)
 	RouteCashier.Use(middleware.JWTMiddleware)
@@ -21,14 +22,10 @@ func Route(e *echo.Echo) {
 		e.POST("/checkout", controller.RequestPayment)
 	}
 
+	// Role admin
 	RouteAdmin := api.Group("/admin")
 	RouteAdmin.POST("/login", controller.LoginAdmin)
-	RouteAdmin.Use(middleware.JWTMiddleware, middleware.AdminMiddleware)
-	{
-		RouteAdmin.GET("/cashier", admin.GetCashier)
-		RouteAdmin.POST("/cashier", admin.AddCashier)
-		RouteAdmin.PUT("/cashier/:id", admin.EditCashier)
-		RouteAdmin.DELETE("/cashier/:id", admin.DeleteCashier)
+	RouteAdmin.Use(middleware.JWTMiddleware)
 
 		RouteAdmin.GET("/membership", admin.GetMembership)
 		RouteAdmin.POST("/membership", admin.AddMembership)
@@ -49,6 +46,3 @@ func Route(e *echo.Echo) {
 		RouteAdmin.POST("/category/create", admin.CreateCategory)
 		RouteAdmin.DELETE("/category/delete", admin.DeleteCategory)
 	}
-
-	e.Static("/images", "./images")
-}
