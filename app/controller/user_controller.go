@@ -1,13 +1,14 @@
 package controller
 
 import (
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"point-of-sale/app/middleware"
 	"point-of-sale/app/model"
 	"point-of-sale/config"
 	"point-of-sale/utils/dto"
 	"point-of-sale/utils/res"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/labstack/echo/v4"
 )
