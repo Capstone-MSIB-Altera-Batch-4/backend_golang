@@ -1,0 +1,885 @@
+{
+	"info": {
+		"_postman_id": "d8f20885-2593-44cf-97d5-0a686fc5a6de",
+		"name": "Point of sale",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24981628",
+		"_collection_link": "https://red-equinox-871018.postman.co/workspace/New-Team-Workspace~8f9552c2-68a5-40d3-994d-b03f059536f3/collection/24981628-d8f20885-2593-44cf-97d5-0a686fc5a6de?action=share&creator=24981628&source=collection_link"
+	},
+	"item": [
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "cashier",
+					"item": [
+						{
+							"name": "get cashier",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/cashier?page=1",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"cashier"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1",
+											"description": "required query param"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create cashier",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\" : \"kaffein\",\r\n    \"password\" : \"kaffein\",\r\n    \"role\" : \"cashier\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/cashier",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"cashier"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update cashier - by id",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\" : \"update\",\r\n    \"password\" : \"update\",\r\n    \"role\" : \"admin\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/cashier/22",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"cashier",
+										"22"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete cashier - by id",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\" : \"update\",\r\n    \"password\" : \"update\",\r\n    \"role\" : \"admin\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/cashier/22",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"cashier",
+										"22"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "membership",
+					"item": [
+						{
+							"name": "get membership",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/membership?page=1",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"membership"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1",
+											"description": "required query param"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create membership",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\" : \"membership\",\r\n    \"email\" : \"membership@test.com\",\r\n    \"phone\" : 1231,\r\n    \"birth_day\" : \"1998-12-30\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/membership",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"membership"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "add point membership",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\" : 12,\r\n    \"total_transaction\" : 450000\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/membership/point",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"membership",
+										"point"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update membership - by id",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\" : \"update_membership\",\r\n    \"email\" : \"update_membership@test.com\",\r\n    \"phone\" : 991231,\r\n    \"birth_day\" : \"1991-12-30\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/membership/12",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"membership",
+										"12"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete membership - by id",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\" : \"update_membership\",\r\n    \"email\" : \"update_membership@test.com\",\r\n    \"phone\" : 991231,\r\n    \"birth_day\" : \"1991-12-30\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/membership/12",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"membership",
+										"12"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "order",
+					"item": [
+						{
+							"name": "get order",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/orders",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"orders"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "products",
+					"item": [
+						{
+							"name": "get products",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/product",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"product"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get products - by id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/product/2",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"product",
+										"2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create products",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "products_id",
+											"value": "CH-01",
+											"description": "code product",
+											"type": "text"
+										},
+										{
+											"key": "products_name",
+											"value": "chitato",
+											"type": "text"
+										},
+										{
+											"key": "products_category",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "products_quantity",
+											"value": "100",
+											"type": "text"
+										},
+										{
+											"key": "products_price",
+											"value": "2000",
+											"type": "text"
+										},
+										{
+											"key": "products_unit",
+											"value": "unit",
+											"type": "text"
+										},
+										{
+											"key": "products_description",
+											"value": "makanan ringan cemilan",
+											"type": "text"
+										},
+										{
+											"key": "products_image",
+											"description": "required image",
+											"type": "file",
+											"src": "/C:/Users/Kaffein/Desktop/New folder/images/Chitato.jpg"
+										}
+									]
+								},
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/product",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"product"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update products - by id",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "products_id",
+											"value": "TA-91",
+											"description": "code product",
+											"type": "text"
+										},
+										{
+											"key": "products_name",
+											"value": "Taro",
+											"type": "text"
+										},
+										{
+											"key": "products_category",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "products_quantity",
+											"value": "50",
+											"type": "text"
+										},
+										{
+											"key": "products_price",
+											"value": "4000",
+											"type": "text"
+										},
+										{
+											"key": "products_unit",
+											"value": "unit",
+											"type": "text"
+										},
+										{
+											"key": "products_description",
+											"value": "makanan ringan cemilan taro",
+											"type": "text"
+										},
+										{
+											"key": "products_image",
+											"description": "no required image",
+											"type": "file",
+											"src": "/C:/Users/Kaffein/Desktop/New folder/images/taro.jpg"
+										}
+									]
+								},
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/product/4",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"product",
+										"4"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete products - by id",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "products_id",
+											"value": "TA-91",
+											"description": "code product",
+											"type": "text"
+										},
+										{
+											"key": "products_name",
+											"value": "Taro",
+											"type": "text"
+										},
+										{
+											"key": "products_category",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "products_quantity",
+											"value": "50",
+											"type": "text"
+										},
+										{
+											"key": "products_price",
+											"value": "4000",
+											"type": "text"
+										},
+										{
+											"key": "products_unit",
+											"value": "unit",
+											"type": "text"
+										},
+										{
+											"key": "products_description",
+											"value": "makanan ringan cemilan taro",
+											"type": "text"
+										},
+										{
+											"key": "products_image",
+											"description": "no required image",
+											"type": "file",
+											"src": "/C:/Users/Kaffein/Desktop/New folder/images/taro.jpg"
+										}
+									]
+								},
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/product/4",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"product",
+										"4"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "category",
+					"item": [
+						{
+							"name": "get category",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/category",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"category"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create category",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\" : \"cemilan\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/category",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"category"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete category",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\" : \"cemilan\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8000/api/v1/admin/category/3",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"category",
+										"3"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Cashier",
+			"item": [
+				{
+					"name": "get category & items",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/api/v1/cashier/order?category=minuman&limit=10&page=2",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"cashier",
+								"order"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "minuman",
+									"description": "serach by category"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "show 10 items & category"
+								},
+								{
+									"key": "page",
+									"value": "2",
+									"description": "show items & category in page 2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search items",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/api/v1/cashier/order/search?name=sprite",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"cashier",
+								"order",
+								"search"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "sprite",
+									"description": "name of items"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search members",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/api/v1/cashier/order/member?name=satria",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"cashier",
+								"order",
+								"member"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "satria",
+									"description": "search name like '%satria%'"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create transaction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\" : \"rian\",\r\n    \"order_option\" : \"dine in\",\r\n    \"number_table\" : 4,\r\n    \"payment\" : \"BCA\",\r\n    \"items\" : [\r\n        {\r\n            \"product_id\" : 2,\r\n            \"quantity\" : 7,\r\n            \"note\" : \"pakai es batu\"\r\n        },\r\n        {\r\n            \"product_id\" : 3,\r\n            \"quantity\" : 10,\r\n            \"note\" : \"\"\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/api/v1/cashier/checkout",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"cashier",
+								"checkout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Login as cashier",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\" : \"CS-01\",\r\n    \"password\" : \"cashier\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/cashier/login",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"cashier",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login as admin",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\" : \"admin\",\r\n    \"password\" : \"admin\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/admin/login",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"admin",
+						"login"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImV4cCI6MTY4NTk3MTM0NH0.eAHRRFK56hr5EphEI_p4SpmN_0iR0HCObgQfiEjn-iI",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

@@ -184,7 +184,7 @@ func DeleteMembership(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	response := res.Response(200, "Success", "Membership deleted", "")
+	response := res.Response(200, "Success", "Membership deleted", nil)
 
 	return c.JSON(http.StatusOK, response)
 }

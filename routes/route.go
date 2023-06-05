@@ -15,10 +15,10 @@ func Route(e *echo.Echo) {
 	RouteCashier.POST("/login", controller.LoginCashier)
 	RouteCashier.Use(middleware.JWTMiddleware)
 	{
-		e.GET("/order", controller.SearchItems)
-		e.GET("/order/search", controller.SearchItemsByName)
-		e.GET("/order/member", controller.SearchMembershipByName)
-		e.POST("/checkout", controller.RequestPayment)
+		RouteCashier.GET("/order", controller.SearchItems)
+		RouteCashier.GET("/order/search", controller.SearchItemsByName)
+		RouteCashier.GET("/order/member", controller.SearchMembershipByName)
+		RouteCashier.POST("/checkout", controller.RequestPayment)
 	}
 
 	RouteAdmin := api.Group("/admin")
@@ -41,13 +41,13 @@ func Route(e *echo.Echo) {
 
 		RouteAdmin.GET("/product", admin.IndexProducts)
 		RouteAdmin.GET("/product/:id", admin.DetailProducts)
-		RouteAdmin.POST("/product/create", admin.CreateProducts)
-		RouteAdmin.DELETE("/product/delete", admin.DeleteProducts)
-		RouteAdmin.PUT("/product/update", admin.UpdateProducts)
+		RouteAdmin.POST("/product", admin.CreateProducts)
+		RouteAdmin.DELETE("/product/:id", admin.DeleteProducts)
+		RouteAdmin.PUT("/product/:id", admin.UpdateProducts)
 
 		RouteAdmin.GET("/category", admin.IndexCategory)
-		RouteAdmin.POST("/category/create", admin.CreateCategory)
-		RouteAdmin.DELETE("/category/delete", admin.DeleteCategory)
+		RouteAdmin.POST("/category", admin.CreateCategory)
+		RouteAdmin.DELETE("/category/:id", admin.DeleteCategory)
 	}
 
 	e.Static("/images", "./images")

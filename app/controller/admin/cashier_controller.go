@@ -2,6 +2,7 @@ package admin
 
 import (
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"point-of-sale/app/model"
 	"point-of-sale/config"
@@ -61,11 +62,16 @@ func AddCashier(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
+	hash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
 	userCode := fmt.Sprintf("%s-%d", gen.RandomStrGen(), gen.RandomIntGen())
 	cashier := model.User{
 		UserCode:  userCode,
 		Username:  request.Username,
-		Password:  request.Password,
+		Password:  string(hash),
 		Role:      request.Role,
 		CreatedAt: time.Now(),
 	}
@@ -88,28 +94,30 @@ func EditCashier(c echo.Context) error {
 	id := c.Param("id")
 	intID, err := strconv.Atoi(id)
 	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Invalid ID format")
+	}
+
+	existingCashier := model.User{}
+	if err := config.Db.First(&existingCashier, intID).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	now := time.Now()
-	cashier := model.User{
-		ID:        intID,
-		Username:  request.Username,
-		Password:  request.Password,
-		Role:      request.Role,
-		UpdatedAt: now,
-	}
-
-	if err := config.Db.Updates(&cashier).Error; err != nil {
+	hash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	if err := config.Db.First(&cashier, intID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
-
+	updatedFields := model.User{
+		Username: request.Username,
+		Password: string(hash),
+		Role:     request.Role,
 	}
 
-	response := res.Response(200, "Success", "Cashier edited", cashier)
+	if err := config.Db.Model(&existingCashier).Updates(updatedFields).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	response := res.Response(200, "Success", "Cashier edited", existingCashier)
 
 	return c.JSON(http.StatusOK, response)
 }

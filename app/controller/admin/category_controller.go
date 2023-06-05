@@ -7,6 +7,7 @@ import (
 	"point-of-sale/config"
 	"point-of-sale/utils/dto"
 	"point-of-sale/utils/res"
+	"strconv"
 )
 
 func IndexCategory(c echo.Context) error {
@@ -40,7 +41,16 @@ func CreateCategory(c echo.Context) error {
 }
 
 func DeleteCategory(c echo.Context) error {
-	id := c.QueryParam("id")
+	categoryID := c.Param("id")
+
+	if categoryID == "" {
+		return c.JSON(http.StatusBadRequest, "Invalid product ID")
+	}
+
+	id, err := strconv.Atoi(categoryID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Invalid product ID")
+	}
 
 	if err := config.Db.Delete(&model.Category{}, id).Error; err != nil {
 		format := res.Response(http.StatusInternalServerError, "error", "error delete data", err.Error())

@@ -134,7 +134,7 @@ func CreateProducts(c echo.Context) error {
 }
 
 func DeleteProducts(c echo.Context) error {
-	productID := c.QueryParam("id")
+	productID := c.Param("id")
 
 	if productID == "" {
 		return c.JSON(http.StatusBadRequest, "Invalid product ID")
@@ -161,7 +161,7 @@ func DeleteProducts(c echo.Context) error {
 }
 
 func UpdateProducts(c echo.Context) error {
-	productID := c.QueryParam("id")
+	productID := c.Param("id")
 
 	if productID == "" {
 		return c.JSON(http.StatusBadRequest, "Invalid product ID")
@@ -197,6 +197,7 @@ func UpdateProducts(c echo.Context) error {
 		Unit:        request.Unit,
 		Price:       request.Price,
 		Description: request.Description,
+		CreatedAt:   product.CreatedAt,
 	}
 
 	var isImageUploaded bool
@@ -259,7 +260,7 @@ func DetailProducts(c echo.Context) error {
 	}
 
 	product := model.Product{}
-	if err := config.Db.Preload("CategoryID").Where("id = ?", idProduct).First(&product).Error; err != nil {
+	if err := config.Db.Preload("Category").Where("id = ?", idProduct).First(&product).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, "Product not found")
 		}
