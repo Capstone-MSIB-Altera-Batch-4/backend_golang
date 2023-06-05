@@ -36,11 +36,11 @@ func GetMembership(c echo.Context) error {
 
 	offset = (page - 1) * limit
 
-	if err := config.Db.Table("membership").Offset(offset).Find(&memberships).Error; err != nil {
+	if err := config.Db.Table("memberships").Offset(offset).Find(&memberships).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	if err := config.Db.Table("membership").Model(&model.Membership{}).Count(&total).Error; err != nil {
+	if err := config.Db.Table("memberships").Model(&model.Membership{}).Count(&total).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	pages := res.Pagination{
@@ -71,7 +71,7 @@ func AddMembership(c echo.Context) error {
 		CreatedAt:  time.Now(),
 	}
 
-	if err := config.Db.Table("membership").Create(&membership).Error; err != nil {
+	if err := config.Db.Table("memberships").Create(&membership).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
@@ -104,7 +104,7 @@ func AddPoint(c echo.Context) error {
 	}
 
 	fmt.Println(request.ID)
-	if err := config.Db.Table("membership").First(&membership, request.ID).Error; err != nil {
+	if err := config.Db.Table("memberships").First(&membership, request.ID).Error; err != nil {
 		return err
 	}
 
@@ -120,7 +120,7 @@ func AddPoint(c echo.Context) error {
 		membership.Level = "Gold"
 	}
 
-	if err := config.Db.Table("membership").Updates(&membership).Error; err != nil {
+	if err := config.Db.Table("memberships").Updates(&membership).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
@@ -149,13 +149,12 @@ func EditMembership(c echo.Context) error {
 		BirthDay: request.BirthDay,
 	}
 
-	if err := config.Db.Table("membership").Updates(&membership).Error; err != nil {
+	if err := config.Db.Table("memberships").Updates(&membership).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	if err := config.Db.Table("membership").First(&membership, intID).Error; err != nil {
+	if err := config.Db.Table("memberships").First(&membership, intID).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
-
 	}
 
 	response := res.Response(200, "Success", "Membership edited", membership)
@@ -170,7 +169,7 @@ func DeleteMembership(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	if err := config.Db.Table("membership").Where("id = ?", intID).Delete(&model.Membership{}).Error; err != nil {
+	if err := config.Db.Table("memberships").Where("id = ?", intID).Delete(&model.Membership{}).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
