@@ -4,7 +4,7 @@ import "point-of-sale/app/model"
 
 type SetLoginFormat struct {
 	Username  string `json:"username"`
-	UsersCode string `json:"users_code"`
+	UsersCode string `json:"user_code"`
 	Token     string `json:"token"`
 }
 

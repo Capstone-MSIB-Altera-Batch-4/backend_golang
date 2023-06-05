@@ -11,7 +11,6 @@ import (
 
 func SearchItems(c echo.Context) error {
 	// Query parameters
-	searchName := c.QueryParam("name")         // Nama item yang ingin dicari
 	limitStr := c.QueryParam("limit")          // Jumlah kategori yang ingin ditampilkan
 	searchCategory := c.QueryParam("category") // Nama kategori yang ingin dicari
 	pageStr := c.QueryParam("page")            // Nomor halaman
@@ -29,14 +28,9 @@ func SearchItems(c echo.Context) error {
 
 	// Membuat query untuk mengambil kategori dan item
 	categoryQuery := config.Db.Model(&model.Category{})
-	productQuery := config.Db.Model(&model.Product{})
 
 	if searchCategory != "" {
 		categoryQuery = categoryQuery.Where("name = ?", searchCategory)
-	}
-
-	if searchName != "" {
-		productQuery = productQuery.Where("name LIKE ?", "%"+searchName+"%")
 	}
 
 	var totalItems int64
@@ -59,10 +53,6 @@ func SearchItems(c echo.Context) error {
 
 		// Membuat query untuk mengambil produk berdasarkan kategori
 		productQuery := config.Db.Model(&model.Product{})
-		if searchName != "" {
-			productQuery = productQuery.Where("name LIKE ?", "%"+searchName+"%")
-		}
-
 		if err := productQuery.Where("category_id = ?", category.ID).Find(&category.Products).Error; err != nil {
 			return c.JSON(http.StatusInternalServerError, res.Response(http.StatusInternalServerError, "error", err.Error(), nil))
 		}
@@ -119,7 +109,7 @@ func SearchMembershipByName(c echo.Context) error {
 	}
 
 	var responseMemberships []model.Membership
-	membershipQuery := config.Db.Model(&model.Membership{}).Table("membership").Where("name LIKE ?", "%"+searchName+"%")
+	membershipQuery := config.Db.Model(&model.Membership{}).Where("name LIKE ?", "%"+searchName+"%")
 	if err := membershipQuery.Find(&responseMemberships).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, res.Response(http.StatusInternalServerError, "error", err.Error(), nil))
 	}
