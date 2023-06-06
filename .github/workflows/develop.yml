@@ -1,0 +1,83 @@
+name: git action
+
+ 
+
+on:
+  push:
+    branches:
+      - develop
+
+ 
+
+env:
+  REGISTRY: "registry.digitalocean.com/private-registry"
+  IMAGE_NAME: "develop"
+
+ 
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+
+ 
+
+      - name: Create Docker config file
+        run: echo "${{ secrets.DOCKER_CONFIG_JSON }}" > $HOME/.docker/config.json
+
+      - name: Install doctl
+        run: |
+          curl -sL https://github.com/digitalocean/doctl/releases/download/v1.66.0/doctl-1.66.0-linux-amd64.tar.gz | tar -xzv
+          sudo mv doctl /usr/local/bin
+
+ 
+
+
+      - name: Log in to DigitalOcean Container Registry
+        run: doctl auth init -t ${{ secrets.REGISTRY_TOKEN }}
+
+ 
+
+        
+      - name: Build container image
+        run: docker build -t $REGISTRY/$IMAGE_NAME:${{ github.sha }} .
+
+      - name: Tag & Push image to DigitalOcean Container Registry
+        run: |
+          doctl registry login
+          docker push $REGISTRY/$IMAGE_NAME:${{ github.sha }}
+
+ 
+
+ 
+
+
+  deploy:
+   needs: build_and_push
+   runs-on: ubuntu-latest
+   steps:
+    - name: Deploy to Digital Ocean droplet via SSH action
+      run: |
+        echo "${{ secrets.SSHKEY }}" > ssh_key.pem
+        chmod 600 ssh_key.pem
+        ssh -i ssh_key.pem -o StrictHostKeyChecking=no root@${{ secrets.HOST }} <<EOF
+          set -e
+
+          # Login to registry
+          doctl registry login
+
+          # Stop running container
+          # docker stop $REGISTRY/$IMAGE_NAME:${{ github.sha }}
+
+          # Remove old container
+          # docker rm $REGISTRY/$IMAGE_NAME:${{ github.sha }}
+
+          docker pull $REGISTRY/$IMAGE_NAME:${{ github.sha }}
+          docker stop $IMAGE_NAME || true
+          docker rm $IMAGE_NAME || true
+
+
+          # Run a new container from a new image
+          docker run -d --name $IMAGE_NAME --network mynetwork -p 8000:8000 $REGISTRY/$IMAGE_NAME:${{ github.sha }}
