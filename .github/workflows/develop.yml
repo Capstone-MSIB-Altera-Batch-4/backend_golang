@@ -58,11 +58,11 @@ jobs:
           doctl registry login
 
           # Stop and remove old containers
-          docker-compose down
+          docker compose down
 
           # Pull the latest images
-          docker-compose pull
+          docker compose pull
 
           # Start the containers
-          docker-compose up -d
+          docker compose up -d
         EOF
