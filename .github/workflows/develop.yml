@@ -70,4 +70,4 @@ jobs:
           docker network ls
 
           # Run a new container from a new image
-          docker run -d --name $IMAGE_NAME --network mynetwork --network-allias backend-go-container -p 8000:8000 $REGISTRY/$IMAGE_NAME:${{ github.sha }}
+          docker run -d --name $IMAGE_NAME --network mynetwork --network-alias backend-go-container -p 8000:8000 $REGISTRY/$IMAGE_NAME:${{ github.sha }}
