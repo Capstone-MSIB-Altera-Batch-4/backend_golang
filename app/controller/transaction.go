@@ -19,8 +19,13 @@ func RequestPayment(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, response)
 	}
 
-	if request.OrderOption != "dine in" && request.OrderOption != "take away" {
-		response := res.Response(http.StatusBadRequest, "error", "failed input data", "order option only 'take away' or 'dine in'")
+	if err := generator.ValidateData(&request); err != nil {
+		response := res.Response(http.StatusBadRequest, "error", "failed input data", err)
+		return c.JSON(http.StatusBadRequest, response)
+	}
+
+	if request.OrderOption != "DINE_IN" && request.OrderOption != "TAKE_AWAY" {
+		response := res.Response(http.StatusBadRequest, "error", "failed input data", "order option only 'DINE_IN' or 'TAKE_AWAY'")
 		return c.JSON(http.StatusBadRequest, response)
 	}
 
@@ -77,12 +82,13 @@ func RequestPayment(c echo.Context) error {
 		}
 		serviceCharge := float64(service.Service) / 100.0
 		transaction := model.Transaction{
-			OrderID: order.ID,
-			Status:  "paid",
-			Payment: request.Payment,
-			Amount:  totalAmount + int(float64(totalAmount)*serviceCharge),
-			Service: service.Service,
-			UserID:  user.ID,
+			OrderID:    order.ID,
+			Status:     "Paid",
+			Payment:    request.Payment,
+			Amount:     totalAmount + int(float64(totalAmount)*serviceCharge),
+			Service:    service.Service,
+			MemberCode: request.MemberCode,
+			UserID:     user.ID,
 		}
 		order.Transaction = transaction
 		if err := tx.Create(&transaction).Error; err != nil {
@@ -93,7 +99,7 @@ func RequestPayment(c echo.Context) error {
 		totalAmountForPoints := transaction.Amount
 		if totalAmountForPoints > 0 {
 			member := model.Membership{}
-			if err := tx.Where("name = ?", request.Name).First(&member).Error; err == nil {
+			if err := tx.Where("member_code = ?", request.MemberCode).First(&member).Error; err == nil {
 				points := 0
 				if totalAmountForPoints <= 50000 {
 					points = 10

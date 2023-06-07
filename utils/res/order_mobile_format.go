@@ -6,13 +6,13 @@ import (
 )
 
 type SetCashierOrderResponse struct {
-	ID          int                    `json:"order_id"`
-	OrderCode   string                 `json:"order_code"`
-	Name        string                 `json:"name"`
-	OrderOption string                 `json:"order_option"`
-	NumberTable int                    `json:"number_table"`
-	Service     int                    `json:"service"`
-	Subtotal    int                    `json:"subtotal"`
+	ID          int                     `json:"order_id"`
+	OrderCode   string                  `json:"order_code"`
+	Name        string                  `json:"name"`
+	OrderOption string                  `json:"order_option"`
+	NumberTable int                     `json:"number_table"`
+	Service     int                     `json:"service"`
+	Subtotal    int                     `json:"subtotal"`
 	GrandTotal  int                     `json:"grand_total"`
 	Items       []SetItemOutputResponse `json:"items"`
 	Transaction SetTransactionResponse  `json:"transaction"`
@@ -124,21 +124,4 @@ func TransformCategoryOrder(search model.Category) SetSearchOrderResponse {
 	}
 
 	return setResponse
-}
-
-type SetSearchMembership struct {
-	Name string
-}
-
-func TransformSearchOrderMember(member []model.Membership) []SetSearchMembership {
-	searchMemberships := []SetSearchMembership{}
-
-	for _, m := range member {
-		searchMembership := SetSearchMembership{
-			Name: m.Name,
-		}
-		searchMemberships = append(searchMemberships, searchMembership)
-	}
-
-	return searchMemberships
 }

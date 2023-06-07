@@ -2,6 +2,7 @@ package admin
 
 import (
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -12,6 +13,7 @@ import (
 	"point-of-sale/app/model"
 	"point-of-sale/config"
 	"point-of-sale/utils/dto"
+	"point-of-sale/utils/gen"
 	"point-of-sale/utils/res"
 	"strconv"
 )
@@ -79,9 +81,28 @@ func CreateProducts(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
+	// #upload file & validation image
 	file, err := c.FormFile("products_image")
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		if err.Error() == "http: no such file" {
+			// Mengabaikan jika tidak ada file yang masuk
+			request.ProductsImage = ""
+		} else {
+			return c.JSON(http.StatusBadRequest, err.Error())
+		}
+	} else {
+		request.ProductsImage = file.Filename
+	}
+
+	// Lakukan validasi data
+	if validationErrors := gen.ValidateData(request); validationErrors != nil {
+		if request.ProductsImage != "" {
+			err := os.Remove(request.ProductsImage)
+			if err != nil {
+				fmt.Printf("Gagal menghapus file image: %v\n", err)
+			}
+		}
+		return c.JSON(http.StatusBadRequest, validationErrors)
 	}
 
 	fileReader, err := file.Open()
@@ -92,11 +113,6 @@ func CreateProducts(c echo.Context) error {
 
 	filename := uuid.NewString() + filepath.Ext(file.Filename)
 	savePath := filepath.Join("images", "products", filename)
-
-	err = os.MkdirAll(filepath.Dir(savePath), os.ModePerm)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
-	}
 
 	dst, err := os.Create(savePath)
 	if err != nil {
@@ -129,7 +145,7 @@ func CreateProducts(c echo.Context) error {
 		return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
 	transformedProduct := res.TransformAdminProduct(product)
-	format := res.Response(http.StatusCreated, "success", "Added product Successfully", transformedProduct)
+	format := res.Response(http.StatusCreated, "success", "Added product successfully", transformedProduct)
 	return c.JSON(http.StatusCreated, format)
 }
 
@@ -177,7 +193,7 @@ func UpdateProducts(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, "Product not found")
 	}
 
-	request := dto.CreateProductRequest{}
+	request := dto.UpdateProductRequest{}
 	if err := c.Bind(&request); err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -204,6 +220,21 @@ func UpdateProducts(c echo.Context) error {
 	file, err := c.FormFile("products_image")
 	if err != nil && err != http.ErrMissingFile {
 		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	//Validation image
+	if file == nil {
+		request.ProductsImage = product.Image
+	} else {
+		request.ProductsImage = file.Filename
+	}
+	if validationErrors := gen.ValidateData(request); validationErrors != nil {
+		if request.ProductsImage != "" {
+			if err != nil {
+				fmt.Printf("Gagal menghapus file image: %v\n", err)
+			}
+		}
+		return c.JSON(http.StatusBadRequest, validationErrors)
 	}
 
 	if file != nil {
@@ -236,7 +267,6 @@ func UpdateProducts(c echo.Context) error {
 		}
 
 		updatedProduct.Image = savePath
-
 		isImageUploaded = true
 	}
 
@@ -249,7 +279,7 @@ func UpdateProducts(c echo.Context) error {
 	}
 
 	transformedProduct := res.TransformAdminProduct(updatedProduct)
-	format := res.Response(http.StatusOK, "success", "Product update successfully", transformedProduct)
+	format := res.Response(http.StatusOK, "success", "Product updated successfully", transformedProduct)
 	return c.JSON(http.StatusOK, format)
 }
 
