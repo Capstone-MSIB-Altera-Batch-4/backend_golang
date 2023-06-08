@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"errors"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 	"net/http"
 	"point-of-sale/app/model"
 	"point-of-sale/config"
@@ -21,7 +23,7 @@ func SearchItems(c echo.Context) error {
 
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page <= 0 {
-		page = 1
+		page = 0
 	}
 
 	categoryQuery := config.Db.Model(&model.Category{})
@@ -107,4 +109,26 @@ func SearchItemsByName(c echo.Context) error {
 	response := res.Responsedata(http.StatusOK, "success", "Data retrieved successfully", responseProducts, pages)
 
 	return c.JSON(http.StatusOK, response)
+}
+
+func GetItemsByID(c echo.Context) error {
+	idProduct, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		format := res.Response(http.StatusBadRequest, "error", "Invalid product ID", nil)
+		return c.JSON(http.StatusBadRequest, format)
+	}
+
+	product := model.Product{}
+	if err := config.Db.Preload("Category").Where("id = ?", idProduct).First(&product).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			format := res.Response(http.StatusNotFound, "error", "Product not found", nil)
+			return c.JSON(http.StatusNotFound, format)
+		}
+		format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, format)
+	}
+
+	transformedProduct := res.TransformAdminProduct(product)
+	format := res.Response(http.StatusOK, "success", "successfully retrieved data", transformedProduct)
+	return c.JSON(http.StatusOK, format)
 }

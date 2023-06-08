@@ -17,6 +17,7 @@ func Route(e *echo.Echo) {
 	{
 		RouteCashier.GET("/order", controller.SearchItems)
 		RouteCashier.GET("/order/search", controller.SearchItemsByName)
+		RouteCashier.GET("/order/item", controller.GetItemsByID)
 		RouteCashier.POST("/checkout", controller.RequestPayment)
 	}
 
@@ -45,8 +46,7 @@ func Route(e *echo.Echo) {
 		RouteAdmin.PUT("/product/:id", admin.UpdateProducts)
 
 		RouteAdmin.GET("/category", admin.IndexCategory)
-		RouteAdmin.POST("/category/create", admin.CreateCategory)
-		RouteAdmin.DELETE("/category/delete", admin.DeleteCategory)
+		RouteAdmin.POST("/category", admin.CreateCategory)
+		RouteAdmin.DELETE("/category/:id", admin.DeleteCategory)
 	}
-	e.POST("/validation", controller.Validation)
 }

@@ -48,7 +48,8 @@ func IndexProducts(c echo.Context) error {
 	if categoryStr != "" {
 		category := model.Category{}
 		if err := config.Db.Where("name = ?", categoryStr).First(&category).Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, err.Error())
+			format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+			return c.JSON(http.StatusInternalServerError, format)
 		}
 		query = query.Where("category_id = ?", category.ID)
 	}
@@ -59,7 +60,8 @@ func IndexProducts(c echo.Context) error {
 
 	var products []model.Product
 	if err := query.Offset(offset).Limit(limit).Find(&products).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, format)
 	}
 
 	transformedProducts := res.TransformAdminProducts(products)
@@ -78,7 +80,8 @@ func CreateProducts(c echo.Context) error {
 	request := dto.CreateProductRequest{}
 
 	if err := c.Bind(&request); err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		format := res.Response(http.StatusBadRequest, "error", err.Error(), nil)
+		return c.JSON(http.StatusBadRequest, format)
 	}
 
 	// #upload file & validation image
@@ -88,7 +91,8 @@ func CreateProducts(c echo.Context) error {
 			// Mengabaikan jika tidak ada file yang masuk
 			request.ProductsImage = ""
 		} else {
-			return c.JSON(http.StatusBadRequest, err.Error())
+			format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+			return c.JSON(http.StatusInternalServerError, format)
 		}
 	} else {
 		request.ProductsImage = file.Filename
@@ -96,18 +100,14 @@ func CreateProducts(c echo.Context) error {
 
 	// Lakukan validasi data
 	if validationErrors := gen.ValidateData(request); validationErrors != nil {
-		if request.ProductsImage != "" {
-			err := os.Remove(request.ProductsImage)
-			if err != nil {
-				fmt.Printf("Gagal menghapus file image: %v\n", err)
-			}
-		}
-		return c.JSON(http.StatusBadRequest, validationErrors)
+		format := res.Response(http.StatusBadRequest, "error", "error input data", validationErrors)
+		return c.JSON(http.StatusBadRequest, format)
 	}
 
 	fileReader, err := file.Open()
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, format)
 	}
 	defer fileReader.Close()
 
@@ -116,18 +116,21 @@ func CreateProducts(c echo.Context) error {
 
 	dst, err := os.Create(savePath)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, format)
 	}
 	defer dst.Close()
 
 	_, err = io.Copy(dst, fileReader)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, format)
 	}
 
 	category := model.Category{}
 	if err := config.Db.Where("id = ?", request.CategoryID).First(&category).Error; err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+		format := res.Response(http.StatusNotFound, "error", "Invalid id category", nil)
+		return c.JSON(http.StatusNotFound, format)
 	}
 
 	product := model.Product{
@@ -142,7 +145,8 @@ func CreateProducts(c echo.Context) error {
 	}
 	product.Category = category
 	if err := config.Db.Create(&product).Error; err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+		format := res.Response(http.StatusUnprocessableEntity, "error", err.Error(), nil)
+		return c.JSON(http.StatusUnprocessableEntity, format)
 	}
 	transformedProduct := res.TransformAdminProduct(product)
 	format := res.Response(http.StatusCreated, "success", "Added product successfully", transformedProduct)
@@ -153,23 +157,33 @@ func DeleteProducts(c echo.Context) error {
 	productID := c.Param("id")
 
 	if productID == "" {
-		return c.JSON(http.StatusBadRequest, "Invalid product ID")
+		format := res.Response(http.StatusBadRequest, "error", "Invalid product ID", nil)
+		return c.JSON(http.StatusBadRequest, format)
 	}
 
 	id, err := strconv.Atoi(productID)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid product ID")
+		format := res.Response(http.StatusBadRequest, "error", "Invalid product ID", nil)
+		return c.JSON(http.StatusBadRequest, format)
 	}
 
 	product := model.Product{}
 	if err := config.Db.Where("id = ?", id).First(&product).Error; err != nil {
-		return c.JSON(http.StatusNotFound, "Product not found")
+		format := res.Response(http.StatusNotFound, "error", "Product not found", nil)
+		return c.JSON(http.StatusNotFound, format)
+	}
+
+	// Delete associated order items first
+	if err := config.Db.Where("product_id = ?", id).Delete(&model.OrderItems{}).Error; err != nil {
+		format := res.Response(http.StatusInternalServerError, "error", "Failed to delete associated order items", nil)
+		return c.JSON(http.StatusInternalServerError, format)
 	}
 
 	_ = os.Remove(product.Image)
 
-	if err := config.Db.Delete(&product).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+	if err := config.Db.Where("id = ?", id).Delete(&product).Error; err != nil {
+		format := res.Response(http.StatusBadRequest, "error", err.Error(), nil)
+		return c.JSON(http.StatusBadRequest, format)
 	}
 
 	format := res.Response(http.StatusOK, "success", "Product deleted successfully", nil)
@@ -180,27 +194,32 @@ func UpdateProducts(c echo.Context) error {
 	productID := c.Param("id")
 
 	if productID == "" {
-		return c.JSON(http.StatusBadRequest, "Invalid product ID")
+		format := res.Response(http.StatusBadRequest, "error", "Invalid product ID", nil)
+		return c.JSON(http.StatusBadRequest, format)
 	}
 
 	id, err := strconv.Atoi(productID)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid product ID")
+		format := res.Response(http.StatusInternalServerError, "error", "Invalid product ID", nil)
+		return c.JSON(http.StatusInternalServerError, format)
 	}
 
 	product := model.Product{}
 	if err := config.Db.Where("id = ?", id).First(&product).Error; err != nil {
-		return c.JSON(http.StatusNotFound, "Product not found")
+		format := res.Response(http.StatusNotFound, "error", "Product not found", nil)
+		return c.JSON(http.StatusNotFound, format)
 	}
 
 	request := dto.UpdateProductRequest{}
 	if err := c.Bind(&request); err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		format := res.Response(http.StatusBadRequest, "error", "Failed input data", err.Error())
+		return c.JSON(http.StatusBadRequest, format)
 	}
 
 	category := model.Category{}
 	if err := config.Db.Where("id = ?", request.CategoryID).First(&category).Error; err != nil {
-		return c.JSON(http.StatusNotFound, "Category not found")
+		format := res.Response(http.StatusNotFound, "error", "Category not found", nil)
+		return c.JSON(http.StatusNotFound, format)
 	}
 	product.Category = category
 	updatedProduct := model.Product{
@@ -219,7 +238,8 @@ func UpdateProducts(c echo.Context) error {
 	var isImageUploaded bool
 	file, err := c.FormFile("products_image")
 	if err != nil && err != http.ErrMissingFile {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		format := res.Response(http.StatusBadRequest, "error", err.Error(), nil)
+		return c.JSON(http.StatusBadRequest, format)
 	}
 
 	//Validation image
@@ -234,7 +254,8 @@ func UpdateProducts(c echo.Context) error {
 				fmt.Printf("Gagal menghapus file image: %v\n", err)
 			}
 		}
-		return c.JSON(http.StatusBadRequest, validationErrors)
+		format := res.Response(http.StatusBadRequest, "error", "failed input data", validationErrors)
+		return c.JSON(http.StatusBadRequest, format)
 	}
 
 	if file != nil {
@@ -242,7 +263,8 @@ func UpdateProducts(c echo.Context) error {
 
 		fileReader, err := file.Open()
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, err.Error())
+			format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+			return c.JSON(http.StatusInternalServerError, format)
 		}
 		defer fileReader.Close()
 
@@ -251,19 +273,22 @@ func UpdateProducts(c echo.Context) error {
 
 		err = os.MkdirAll(filepath.Dir(savePath), os.ModePerm)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, err.Error())
+			format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+			return c.JSON(http.StatusInternalServerError, format)
 		}
 
 		// Simpan file ke path yang ditentukan
 		dst, err := os.Create(savePath)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, err.Error())
+			format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+			return c.JSON(http.StatusInternalServerError, format)
 		}
 		defer dst.Close()
 
 		_, err = io.Copy(dst, fileReader)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, err.Error())
+			format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+			return c.JSON(http.StatusInternalServerError, format)
 		}
 
 		updatedProduct.Image = savePath
@@ -275,7 +300,8 @@ func UpdateProducts(c echo.Context) error {
 	}
 
 	if err := config.Db.Save(&updatedProduct).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, format)
 	}
 
 	transformedProduct := res.TransformAdminProduct(updatedProduct)
@@ -286,15 +312,18 @@ func UpdateProducts(c echo.Context) error {
 func DetailProducts(c echo.Context) error {
 	idProduct, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid product ID")
+		format := res.Response(http.StatusBadRequest, "error", "Invalid ID", nil)
+		return c.JSON(http.StatusBadRequest, format)
 	}
 
 	product := model.Product{}
 	if err := config.Db.Preload("Category").Where("id = ?", idProduct).First(&product).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return c.JSON(http.StatusNotFound, "Product not found")
+			format := res.Response(http.StatusNotFound, "error", "Product not found", nil)
+			return c.JSON(http.StatusNotFound, format)
 		}
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, format)
 	}
 
 	transformedProduct := res.TransformAdminProduct(product)
