@@ -18,3 +18,7 @@ type EditMembershipRequest struct {
 	Phone    int    `json:"phone"`
 	BirthDay string `json:"birth_day"`
 }
+
+type SearchMembershipRequest struct {
+	MemberCode string `json:"member_code"`
+}

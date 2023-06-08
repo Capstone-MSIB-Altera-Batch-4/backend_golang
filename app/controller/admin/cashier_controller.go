@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func GetCashier(c echo.Context) error {
@@ -63,17 +62,10 @@ func AddCashier(c echo.Context) error {
 	}
 
 	userCode := fmt.Sprintf("%s-%d", gen.RandomStrGen(), gen.RandomIntGen())
-
-	// Encrypt the password using bcrypt
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
-	}
-
 	cashier := model.User{
 		UserCode:  userCode,
 		Username:  request.Username,
-		Password:  string(passwordHash),
+		Password:  request.Password,
 		Role:      request.Role,
 		CreatedAt: time.Now(),
 	}
@@ -135,5 +127,17 @@ func DeleteCashier(c echo.Context) error {
 
 	response := res.Response(200, "Success", "Cashier deleted", "")
 
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetCashierByUserCode(c echo.Context) error {
+	userCode := c.QueryParam("user_code")
+
+	cashier := &model.User{}
+	if err := config.Db.Where("role IN ('cashier', 'kepala cashier') AND user_code = ?", userCode).First(&cashier).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	response := res.Response(http.StatusOK, "Success", "Cashier found", cashier)
 	return c.JSON(http.StatusOK, response)
 }
