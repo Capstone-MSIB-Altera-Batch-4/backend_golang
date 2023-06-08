@@ -3,7 +3,7 @@ version: "3"
 services:
   app:
     image: registry.digitalocean.com/private-registry/develop:${{ github.sha }}
-    container_name: backend_go
+    container_name: develop
     ports:
       - "8000:8000"
     networks:
