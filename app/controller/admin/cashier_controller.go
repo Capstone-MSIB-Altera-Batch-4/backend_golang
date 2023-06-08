@@ -125,7 +125,19 @@ func DeleteCashier(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	response := res.Response(200, "Success", "Cashier deleted", nil)
+	response := res.Response(200, "Success", "Cashier deleted", "")
 
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetCashierByUserCode(c echo.Context) error {
+	userCode := c.QueryParam("user_code")
+
+	cashier := &model.User{}
+	if err := config.Db.Where("role IN ('cashier', 'kepala cashier') AND user_code = ?", userCode).First(&cashier).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	response := res.Response(http.StatusOK, "Success", "Cashier found", cashier)
 	return c.JSON(http.StatusOK, response)
 }

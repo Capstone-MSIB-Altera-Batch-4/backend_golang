@@ -1,10 +1,11 @@
 package routes
 
 import (
-	"github.com/labstack/echo/v4"
 	"point-of-sale/app/controller"
 	"point-of-sale/app/controller/admin"
 	"point-of-sale/app/middleware"
+
+	"github.com/labstack/echo/v4"
 )
 
 func Route(e *echo.Echo) {
@@ -28,12 +29,14 @@ func Route(e *echo.Echo) {
 		RouteAdmin.POST("/cashier", admin.AddCashier)
 		RouteAdmin.PUT("/cashier/:id", admin.EditCashier)
 		RouteAdmin.DELETE("/cashier/:id", admin.DeleteCashier)
+		RouteAdmin.GET("/cashier/search", admin.GetCashierByUserCode)
 
 		RouteAdmin.GET("/membership", admin.GetMembership)
 		RouteAdmin.POST("/membership", admin.AddMembership)
 		RouteAdmin.POST("/membership/point", admin.AddPoint)
 		RouteAdmin.PUT("/membership/:id", admin.EditMembership)
 		RouteAdmin.DELETE("/membership/:id", admin.DeleteMembership)
+		RouteAdmin.GET("/membership/search", admin.SearchMembership)
 
 		RouteAdmin.GET("/orders", admin.IndexOrder)
 		RouteAdmin.GET("/orders/:id", admin.DetailOrder)

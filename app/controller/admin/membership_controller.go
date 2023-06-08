@@ -188,3 +188,49 @@ func DeleteMembership(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func SearchMembership(c echo.Context) error {
+	var (
+		page        int
+		limit       = 10
+		offset      int
+		total       int64
+		memberships []*model.Membership
+	)
+
+	temp := c.QueryParam("page")
+
+	if temp == "" {
+		return c.JSON(http.StatusBadRequest, "required parameter `page`")
+	}
+
+	page, err := strconv.Atoi(temp)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "page must be an integer")
+	}
+
+	offset = (page - 1) * limit
+
+	keyword := c.QueryParam("member_code")
+
+	if keyword == "" {
+		return c.JSON(http.StatusBadRequest, "required parameter `member_code`")
+	}
+
+	if err := config.Db.Where("member_code LIKE ?", "%"+keyword+"%").Offset(offset).Limit(limit).Find(&memberships).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	if err := config.Db.Model(&model.Membership{}).Where("member_code LIKE ?", "%"+keyword+"%").Count(&total).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	pages := res.Pagination{
+		Page:       page,
+		Limit:      limit,
+		TotalItems: int(total),
+	}
+	response := res.Responsedata(http.StatusOK, "success", "successfully retrieved data", memberships, pages)
+
+	return c.JSON(http.StatusOK, response)
+}
