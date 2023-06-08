@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+  app:
+    image: registry.digitalocean.com/private-registry/develop:${{ github.sha }}
+    container_name: develop
+    ports:
+      - "8000:8000"
+    networks:
+      - backend-go-nett
+    environment:
+      - DB_HOST=database
+      - DB_USER=root
+      - MYSQL_ROOT_PASSWORD=AVNS_x2j9l7_izuwLp8Qz73W
+      - MYSQL_DATABASE=pos
+      - MYSQL_PORT=3306
+      - APP_PORT=8000
+      - KEY_SECRET=SECRET
+      #Midtrans
+      - BASE_URL=https://api.sandbox.midtrans.com/v2/
+      - SERVER_KEY=
+      - CLIENT_KEY=
+      - ENCODE_KEY=
+
+  database:
+    image: mysql:latest
+    container_name: mysql_db
+    restart: always
+    ports:
+      - "3306:3306"
+    networks:
+      - backend-go-nett
+    environment:
+      - MYSQL_ROOT_PASSWORD=AVNS_x2j9l7_izuwLp8Qz73W
+      - MYSQL_DATABASE=pos
+
+networks:
+  backend-go-nett:
