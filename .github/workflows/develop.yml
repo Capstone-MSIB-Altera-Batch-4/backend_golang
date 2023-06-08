@@ -1,14 +1,17 @@
-name: git action
+name: Membership
+
+ 
 
 on:
   push:
     branches:
-      - develop
+      - features/membership
 
  
+
 env:
   REGISTRY: "registry.digitalocean.com/private-registry"
-  IMAGE_NAME: "develop"
+  IMAGE_NAME: "member"
 
  
 
@@ -30,8 +33,12 @@ jobs:
           sudo mv doctl /usr/local/bin
 
  
+
+
       - name: Log in to DigitalOcean Container Registry
         run: doctl auth init -t ${{ secrets.REGISTRY_TOKEN }}
+
+ 
 
         
       - name: Build container image
@@ -42,6 +49,10 @@ jobs:
           doctl registry login
           docker push $REGISTRY/$IMAGE_NAME:${{ github.sha }}
 
+ 
+
+ 
+
 
   deploy:
    needs: build_and_push
@@ -51,23 +62,22 @@ jobs:
       run: |
         echo "${{ secrets.SSHKEY }}" > ssh_key.pem
         chmod 600 ssh_key.pem
-        
-        #scp -i ssh_key.pem -o StrictHostKeyChecking=no docker-compose.yml root@${{ secrets.HOST }}:/home/backgo/docker-compose.yml
-        
-        ssh -i ssh_key.pem -o StrictHostKeyChecking=no root@${{ secrets.HOST }} "chmod +x /home/backgo/docker-compose.yml" <<EOF
+        ssh -i ssh_key.pem -o StrictHostKeyChecking=no root@${{ secrets.HOST }} <<EOF
           set -e
-          
-          cd /home/backgo/
-          
+
           # Login to registry
           doctl registry login
 
-          # Stop and remove old containers
-          docker compose down
+          # Stop running container
+          # docker stop $REGISTRY/$IMAGE_NAME:${{ github.sha }}
 
-          # Pull the latest images
-          docker compose pull
-          
-          # Start the containers
-          docker compose up -d
-        EOF
+          # Remove old container
+          # docker rm $REGISTRY/$IMAGE_NAME:${{ github.sha }}
+
+          docker pull $REGISTRY/$IMAGE_NAME:${{ github.sha }}
+          docker stop $IMAGE_NAME || true
+          docker rm $IMAGE_NAME || true
+
+
+          # Run a new container from a new image
+          docker run -d --name $IMAGE_NAME --network mynetwork -p 8000:8000 --publish-all $REGISTRY/$IMAGE_NAME:${{ github.sha }}
