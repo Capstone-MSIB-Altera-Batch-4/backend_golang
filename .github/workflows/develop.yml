@@ -47,13 +47,11 @@ jobs:
    needs: build_and_push
    runs-on: ubuntu-latest
    steps:
-    - name: Copy docker-compose.yml to server
-      run: scp -i ssh_key.pem -o StrictHostKeyChecking=no docker-compose.yml root@${{ secrets.HOST }}:docker-compose.yml
-   
     - name: Deploy to Digital Ocean droplet via SSH action
       run: |
         echo "${{ secrets.SSHKEY }}" > ssh_key.pem
         chmod 600 ssh_key.pem
+        scp -i ssh_key.pem -o StrictHostKeyChecking=no docker-compose.yml root@${{ secrets.HOST }}:docker-compose.yml
         ssh -i ssh_key.pem -o StrictHostKeyChecking=no root@${{ secrets.HOST }} <<EOF
           set -e
 
@@ -65,7 +63,7 @@ jobs:
 
           # Pull the latest images
           docker compose pull
-
+          
           # Start the containers
           docker compose up -d
         EOF
