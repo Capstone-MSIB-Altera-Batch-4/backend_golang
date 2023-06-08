@@ -51,8 +51,8 @@ jobs:
       run: |
         echo "${{ secrets.SSHKEY }}" > ssh_key.pem
         chmod 600 ssh_key.pem
-        scp -i ssh_key.pem -o StrictHostKeyChecking=no docker-compose.yml root@${{ secrets.HOST }}:/home/backgodocker-compose.yml
-        ssh -i ssh_key.pem -o StrictHostKeyChecking=no root@${{ secrets.HOST }} <<EOF
+        scp -i ssh_key.pem -o StrictHostKeyChecking=no docker-compose.yml root@${{ secrets.HOST }}:/home/backgo/docker-compose.yml
+        ssh -i ssh_key.pem -o StrictHostKeyChecking=no root@${{ secrets.HOST }} "chmod +x /home/backgo/docker-compose.yml" <<EOF
           set -e
           
           cd /home/backgo/
