@@ -71,11 +71,12 @@ func AddMembership(c echo.Context) error {
 		Name:       request.Name,
 		Email:      request.Email,
 		Phone:      request.Phone,
-		BirthDay:   birthDay,
+		BirthDay:   birthDay.Format("2006-01-02"),
 		Level:      "Bronze",
 		Point:      0,
 		CreatedAt:  time.Now(),
 	}
+	
 
 	if err := config.Db.Table("memberships").Create(&membership).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -157,7 +158,7 @@ func EditMembership(c echo.Context) error {
 		Name:     request.Name,
 		Email:    request.Email,
 		Phone:    request.Phone,
-		BirthDay: birthDay,
+		BirthDay: birthDay.Format("2006-01-02"),
 	}
 
 	if err := config.Db.Table("memberships").Updates(&membership).Error; err != nil {
