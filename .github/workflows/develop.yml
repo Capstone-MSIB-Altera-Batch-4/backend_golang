@@ -5,7 +5,7 @@ name: Membership
 on:
   push:
     branches:
-      - features/membership
+      - develop
 
  
 
