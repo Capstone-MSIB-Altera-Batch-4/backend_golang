@@ -47,6 +47,9 @@ jobs:
    needs: build_and_push
    runs-on: ubuntu-latest
    steps:
+    - name: Copy docker-compose.yml to server
+      run: scp -i ssh_key.pem -o StrictHostKeyChecking=no docker-compose.yml root@${{ secrets.HOST }}:docker-compose.yml
+   
     - name: Deploy to Digital Ocean droplet via SSH action
       run: |
         echo "${{ secrets.SSHKEY }}" > ssh_key.pem
