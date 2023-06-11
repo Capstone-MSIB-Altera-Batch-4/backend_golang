@@ -11,7 +11,7 @@ import (
 )
 
 func IndexOrder(c echo.Context) error {
-	orderCode := c.QueryParam("order_id")
+	orderCode := c.QueryParam("order_code")
 	startDate := c.QueryParam("start_date")
 	endDate := c.QueryParam("end_date")
 	limitStr := c.QueryParam("limit")
@@ -35,7 +35,7 @@ func IndexOrder(c echo.Context) error {
 
 	//kondisi pencarian berdasarkan order_id
 	if orderCode != "" {
-		query = query.Where("order_id LIKE ?", "%"+orderCode+"%")
+		query = query.Where("order_code LIKE ?", "%"+orderCode+"%")
 	}
 
 	//	kondisi pencarian range tanggal
