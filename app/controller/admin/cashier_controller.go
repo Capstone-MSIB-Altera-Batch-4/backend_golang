@@ -106,11 +106,17 @@ func EditCashier(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, response)
 	}
 
+	hash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	if err != nil {
+		response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, response)
+	}
+
 	now := time.Now()
 	cashier := model.User{
 		ID:        intID,
 		Username:  request.Username,
-		Password:  request.Password,
+		Password:  string(hash),
 		Role:      request.Role,
 		UpdatedAt: now,
 	}
