@@ -26,22 +26,26 @@ func GetMembership(c echo.Context) error {
 	temp := c.QueryParam("page")
 
 	if temp == "" {
-		return c.JSON(http.StatusBadRequest, "required paramter `page`")
+		response := res.Response(http.StatusBadRequest, "error", "required parameter page", nil)
+		return c.JSON(http.StatusBadRequest, response)
 	}
 
 	page, err := strconv.Atoi(temp)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "page must be integer")
+		response := res.Response(http.StatusBadRequest, "error", "page must be integer", nil)
+		return c.JSON(http.StatusBadRequest, response)
 	}
 
 	offset = (page - 1) * limit
 
 	if err := config.Db.Table("memberships").Offset(offset).Find(&memberships).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusBadRequest, "error", err.Error(), nil)
+		return c.JSON(http.StatusBadRequest, response)
 	}
 
 	if err := config.Db.Table("memberships").Model(&model.Membership{}).Count(&total).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusBadRequest, "error", err.Error(), nil)
+		return c.JSON(http.StatusBadRequest, response)
 	}
 
 	pages := res.Pagination{
@@ -57,12 +61,14 @@ func GetMembership(c echo.Context) error {
 func AddMembership(c echo.Context) error {
 	request := dto.AddMembershipRequest{}
 	if err := c.Bind(&request); err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusBadRequest, "error", err.Error(), nil)
+		return c.JSON(http.StatusBadRequest, response)
 	}
 
 	birthDay, err := time.Parse("2006-01-02", request.BirthDay)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid BirthDay format")
+		response := res.Response(http.StatusBadRequest, "error", "Invalid BirthDay format", nil)
+		return c.JSON(http.StatusBadRequest, response)
 	}
 
 	memberCode := fmt.Sprintf("%s-%d", gen.RandomStrGen(), gen.RandomIntGen())
@@ -78,7 +84,8 @@ func AddMembership(c echo.Context) error {
 	}
 
 	if err := config.Db.Table("memberships").Create(&membership).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusBadRequest, "error", err.Error(), nil)
+		return c.JSON(http.StatusBadRequest, response)
 	}
 
 	response := res.Response(201, "Success", "Membership created", membership)
@@ -94,11 +101,13 @@ func AddPoint(c echo.Context) error {
 
 	request := dto.AddPointRequest{}
 	if err := c.Bind(&request); err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusBadRequest, "error", err.Error(), nil)
+		return c.JSON(http.StatusBadRequest, response)
 	}
 
 	if request.TotalTransaction < 0 {
-		return c.JSON(http.StatusBadRequest, "total transaction cannot be smaller than 0")
+		response := res.Response(http.StatusBadRequest, "error", "total transaction cannot be smaller than 0", nil)
+		return c.JSON(http.StatusBadRequest, response)
 	} else if request.TotalTransaction < 50001 {
 		point += 10
 	} else if request.TotalTransaction < 100001 {
@@ -111,7 +120,8 @@ func AddPoint(c echo.Context) error {
 
 	fmt.Println(request.ID)
 	if err := config.Db.Table("memberships").First(&membership, request.ID).Error; err != nil {
-		return err
+		response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, response)
 	}
 
 	membership.Point += point
@@ -127,29 +137,32 @@ func AddPoint(c echo.Context) error {
 	}
 
 	if err := config.Db.Table("memberships").Updates(&membership).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(201, "error", "Membership not found", membership)
+		return c.JSON(http.StatusInternalServerError, response)
 	}
 
 	response := res.Response(201, "Success", "Membership edited", membership)
-
 	return c.JSON(http.StatusOK, response)
 }
 
 func EditMembership(c echo.Context) error {
 	request := dto.EditMembershipRequest{}
 	if err := c.Bind(&request); err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, response)
 	}
 
 	id := c.Param("id")
 	intID, err := strconv.Atoi(id)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, response)
 	}
 
 	birthDay, err := time.Parse("2006-01-02", request.BirthDay)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid BirthDay format")
+		response := res.Response(http.StatusBadRequest, "error", "Invalid BirthDay format", nil)
+		return c.JSON(http.StatusBadRequest, response)
 	}
 
 	membership := model.Membership{
@@ -161,15 +174,16 @@ func EditMembership(c echo.Context) error {
 	}
 
 	if err := config.Db.Table("memberships").Updates(&membership).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, response)
 	}
 
 	if err := config.Db.Table("memberships").First(&membership, intID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, response)
 	}
 
 	response := res.Response(200, "Success", "Membership edited", membership)
-
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -181,11 +195,11 @@ func DeleteMembership(c echo.Context) error {
 	}
 
 	if err := config.Db.Table("memberships").Where("id = ?", intID).Delete(&model.Membership{}).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusBadRequest, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, response)
 	}
 
-	response := res.Response(200, "Success", "Membership deleted", "")
-
+	response := res.Response(200, "Success", "Membership deleted", nil)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -201,12 +215,14 @@ func SearchMembership(c echo.Context) error {
 	temp := c.QueryParam("page")
 
 	if temp == "" {
-		return c.JSON(http.StatusBadRequest, "required parameter `page`")
+		response := res.Response(http.StatusBadRequest, "error", "required parameter page", nil)
+		return c.JSON(http.StatusBadRequest, response)
 	}
 
 	page, err := strconv.Atoi(temp)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "page must be an integer")
+		response := res.Response(http.StatusBadRequest, "error", "page must be integer", nil)
+		return c.JSON(http.StatusBadRequest, response)
 	}
 
 	offset = (page - 1) * limit
@@ -218,11 +234,13 @@ func SearchMembership(c echo.Context) error {
 	}
 
 	if err := config.Db.Where("member_code LIKE ?", "%"+keyword+"%").Offset(offset).Limit(limit).Find(&memberships).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, response)
 	}
 
 	if err := config.Db.Model(&model.Membership{}).Where("member_code LIKE ?", "%"+keyword+"%").Count(&total).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusBadRequest, "error", err.Error(), nil)
+		return c.JSON(http.StatusBadRequest, response)
 	}
 
 	pages := res.Pagination{

@@ -25,7 +25,7 @@ func LoginCashier(c echo.Context) error {
 	}
 
 	if err := config.Db.Where("user_code = ?", request.Username).First(&user).Error; err != nil {
-		format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		format := res.Response(http.StatusInternalServerError, "error", "user code not found", nil)
 		return c.JSON(http.StatusInternalServerError, format)
 	}
 
@@ -55,7 +55,7 @@ func LoginAdmin(c echo.Context) error {
 	}
 
 	if err := config.Db.Where("username = ? AND role = ?", request.Username, "admin").First(&user).Error; err != nil {
-		format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		format := res.Response(http.StatusInternalServerError, "error", "username not found", nil)
 		return c.JSON(http.StatusInternalServerError, format)
 	}
 

@@ -18,8 +18,11 @@ func Route(e *echo.Echo) {
 	{
 		RouteCashier.GET("/order", controller.SearchItems)
 		RouteCashier.GET("/order/search", controller.SearchItemsByName)
-		RouteCashier.GET("/order/item", controller.GetItemsByID)
+		RouteCashier.GET("/order/item/:id", controller.GetItemsByID)
 		RouteCashier.POST("/checkout", controller.RequestPayment)
+
+		RouteCashier.GET("/category", admin.IndexCategory)
+		RouteCashier.POST("/membership", admin.AddMembership)
 	}
 
 	RouteAdmin := api.Group("/admin")

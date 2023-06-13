@@ -37,12 +37,13 @@ func TransformOrderResponse(order model.Order) SetCashierOrderResponse {
 	subtotal := 0
 
 	for i, item := range order.Items {
+
 		setItems[i] = SetItemOutputResponse{
-			ID:       item.ProductID,
-			Name:     item.Products.Name,
+			ID:       item.ID,
+			Name:     item.ProductName,
 			Quantity: item.Quantity,
 			Note:     item.Note,
-			Price:    item.Products.Price,
+			Price:    item.Subtotal / item.Quantity,
 			Subtotal: item.Subtotal,
 		}
 

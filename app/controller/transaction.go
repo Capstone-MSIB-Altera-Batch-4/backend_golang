@@ -40,10 +40,13 @@ func RequestPayment(c echo.Context) error {
 		NumberTable: request.TableNumber,
 	}
 
+	var quantityExceeded bool // Variabel untuk melacak apakah terdapat jumlah item yang melebihi stok
+
 	err := config.Db.Transaction(func(tx *gorm.DB) error {
 		// 1. create order
 		if err := tx.Create(&order).Error; err != nil {
-			return err
+			response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+			return c.JSON(http.StatusInternalServerError, response)
 		}
 
 		// 2. create order items
@@ -52,85 +55,49 @@ func RequestPayment(c echo.Context) error {
 		for _, item := range request.Items {
 			product := model.Product{}
 			if err := tx.First(&product, item.ProductID).Error; err != nil {
-				return err
+				response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+				return c.JSON(http.StatusInternalServerError, response)
 			}
+
 			subtotal := item.Quantity * product.Price
 			orderItem := model.OrderItems{
-				OrderID:   order.ID,
-				ProductID: item.ProductID,
-				Quantity:  item.Quantity,
-				Subtotal:  subtotal,
-				Note:      item.Note,
+				OrderID:     order.ID,
+				ProductName: product.Name,
+				Quantity:    item.Quantity,
+				Subtotal:    subtotal,
+				Note:        item.Note,
 			}
+
+			if item.Quantity > product.Quantity {
+				quantityExceeded = true
+				break
+			}
+
+			product.Quantity -= item.Quantity
+			if err := tx.Model(&product).UpdateColumn("quantity", product.Quantity).Error; err != nil {
+				response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+				return c.JSON(http.StatusInternalServerError, response)
+			}
+
 			if err := tx.FirstOrCreate(&orderItem, model.OrderItems{
-				OrderID:   order.ID,
-				ProductID: item.ProductID,
+				OrderID:     order.ID,
+				ProductName: product.Name,
 			}).Error; err != nil {
-				return err
+				response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+				return c.JSON(http.StatusInternalServerError, response)
 			}
-			orderItem.Products = product
+
 			orderItems = append(orderItems, orderItem)
 			totalAmount += subtotal
-		}
-		order.Items = orderItems
-
-		// 3. Create transaction
-		service := model.Service{}
-		user := c.Get("user").(model.User)
-		if err := tx.First(&service).Order("id DESC").Limit(1).Error; err != nil {
-			return err
-		}
-		serviceCharge := float64(service.Service) / 100.0
-		transaction := model.Transaction{
-			OrderID:    order.ID,
-			Status:     "Paid",
-			Payment:    request.Payment,
-			Amount:     totalAmount + int(float64(totalAmount)*serviceCharge),
-			Service:    service.Service,
-			MemberCode: request.MemberCode,
-			UserID:     user.ID,
-		}
-		order.Transaction = transaction
-		if err := tx.Create(&transaction).Error; err != nil {
-			return err
-		}
-
-		// 4. Kalkulasi dan update point member
-		totalAmountForPoints := transaction.Amount
-		if totalAmountForPoints > 0 {
-			member := model.Membership{}
-			if err := tx.Where("member_code = ?", request.MemberCode).First(&member).Error; err == nil {
-				points := 0
-				if totalAmountForPoints <= 50000 {
-					points = 10
-				} else if totalAmountForPoints <= 100000 {
-					points = 20
-				} else if totalAmountForPoints <= 150000 {
-					points = 30
-				} else if totalAmountForPoints <= 200000 {
-					points = 40
-				} else {
-					// Kelipatan
-					points = (totalAmountForPoints / 10000) * 10
-				}
-
-				member.Point += points
-				if member.Point >= 100 && member.Point <= 1999 {
-					member.Level = "bronze"
-				} else if member.Point >= 2000 && member.Point <= 4999 {
-					member.Level = "silver"
-				} else if member.Point >= 5000 {
-					member.Level = "gold"
-				}
-
-				if err := tx.Save(&member).Error; err != nil {
-					return err
-				}
-			}
 		}
 
 		return nil
 	})
+
+	if quantityExceeded {
+		response := res.Response(http.StatusBadRequest, "error", "quantity exceeded available stock", nil)
+		return c.JSON(http.StatusBadRequest, response)
+	}
 
 	if err != nil {
 		response := res.Response(http.StatusInternalServerError, "error", "failed to create order", err.Error())
@@ -177,20 +144,20 @@ func RequestPayment(c echo.Context) error {
 //		var totalAmount float64
 //		for _, item := range request.Items {
 //			product := model.Product{}
-//			if err := tx.First(&product, item.ProductID).Error; err != nil {
+//			if err := tx.First(&product, item.ProductName).Error; err != nil {
 //				return err
 //			}
 //			subtotal := item.Quantity * product.Price
 //			orderItem := model.OrderItems{
 //				OrderID:   order.ID,
-//				ProductID: item.ProductID,
+//				ProductName: item.ProductName,
 //				Quantity:  item.Quantity,
 //				Subtotal:  subtotal,
 //				Note:      item.Note,
 //			}
 //			if err := tx.FirstOrCreate(&orderItem, model.OrderItems{
 //				OrderID:   order.ID,
-//				ProductID: item.ProductID,
+//				ProductName: item.ProductName,
 //			}).Error; err != nil {
 //				return err
 //			}
