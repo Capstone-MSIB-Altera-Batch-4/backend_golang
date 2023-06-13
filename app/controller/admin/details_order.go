@@ -35,7 +35,7 @@ func IndexOrder(c echo.Context) error {
 
 	//kondisi pencarian berdasarkan order_id
 	if orderCode != "" {
-		query = query.Where("order_id LIKE ?", "%"+orderCode+"%")
+		query = query.Where("order_code LIKE ?", "%"+orderCode+"%")
 	}
 
 	//	kondisi pencarian range tanggal
