@@ -108,9 +108,16 @@ func EditCashier(c echo.Context) error {
 	cashier := model.User{
 		ID:        intID,
 		Username:  request.Username,
-		Password:  request.Password,
 		Role:      request.Role,
 		UpdatedAt: now,
+	}
+
+	if request.Password != "" {
+		hash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, err.Error())
+		}
+		cashier.Password = string(hash)
 	}
 
 	if err := config.Db.Updates(&cashier).Error; err != nil {
@@ -119,13 +126,16 @@ func EditCashier(c echo.Context) error {
 
 	if err := config.Db.First(&cashier, intID).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
-
 	}
+
+	// Menghilangkan field "Password" dari respons
+	cashier.Password = ""
 
 	response := res.Response(200, "Success", "Cashier edited", cashier)
 
 	return c.JSON(http.StatusOK, response)
 }
+
 
 func DeleteCashier(c echo.Context) error {
 	id := c.Param("id")
