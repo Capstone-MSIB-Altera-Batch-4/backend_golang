@@ -83,10 +83,14 @@ func AddCashier(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, response)
 	}
 
+	// Menghilangkan field "Password" dari respons
+	cashier.Password = ""
+
 	format := res.TransformCashier(cashier)
 	response := res.Response(201, "Success", "Cashier created", format)
 	return c.JSON(http.StatusOK, response)
 }
+
 
 func EditCashier(c echo.Context) error {
 	request := dto.EditCashierRequest{}
