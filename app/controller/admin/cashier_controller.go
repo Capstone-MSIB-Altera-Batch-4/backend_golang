@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func GetCashier(c echo.Context) error {
@@ -62,10 +63,17 @@ func AddCashier(c echo.Context) error {
 	}
 
 	userCode := fmt.Sprintf("%s-%d", gen.RandomStrGen(), gen.RandomIntGen())
+
+	// Generate hashed password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
 	cashier := model.User{
 		UserCode:  userCode,
 		Username:  request.Username,
-		Password:  request.Password,
+		Password:  string(hashedPassword),
 		Role:      request.Role,
 		CreatedAt: time.Now(),
 	}

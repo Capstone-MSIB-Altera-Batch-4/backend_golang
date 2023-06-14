@@ -13,5 +13,8 @@ func TransformLoginResponse(request model.User, token string) SetLoginFormat {
 		Username:  request.Username,
 		UsersCode: request.UserCode,
 		Token:     token,
+
 	}
 }
+
+
