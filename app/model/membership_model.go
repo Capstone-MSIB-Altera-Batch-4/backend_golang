@@ -7,10 +7,11 @@ type Membership struct {
 	Name       string    `json:"name"`
 	MemberCode string    `json:"member_code"`
 	Email      string    `json:"email"`
-	Phone      int       `json:"phone"`
+	Phone      int64     `json:"phone"`
 	BirthDay   time.Time `json:"birth_day"`
 	Level      string    `json:"level"`
 	Point      int       `json:"point"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 }
+

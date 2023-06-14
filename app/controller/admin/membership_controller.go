@@ -76,7 +76,7 @@ func AddMembership(c echo.Context) error {
 		MemberCode: memberCode,
 		Name:       request.Name,
 		Email:      request.Email,
-		Phone:      request.Phone,
+		Phone:      int64(request.Phone),
 		BirthDay:   birthDay,
 		Level:      "Bronze",
 		Point:      0,
@@ -169,7 +169,7 @@ func EditMembership(c echo.Context) error {
 		ID:       intID,
 		Name:     request.Name,
 		Email:    request.Email,
-		Phone:    request.Phone,
+		Phone:    int64(request.Phone),
 		BirthDay: birthDay,
 	}
 
