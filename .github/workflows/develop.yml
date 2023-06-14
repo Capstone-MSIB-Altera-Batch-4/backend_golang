@@ -1,19 +1,13 @@
 name: POS
 
- 
-
 on:
   push:
     branches:
       - develop
 
- 
-
 env:
   REGISTRY: "registry.digitalocean.com/private-registry"
-  IMAGE_NAME: "member"
-
- 
+  IMAGE_NAME: "develop"
 
 jobs:
   build_and_push:
@@ -49,11 +43,6 @@ jobs:
           doctl registry login
           docker push $REGISTRY/$IMAGE_NAME:${{ github.sha }}
 
- 
-
- 
-
-
   deploy:
    needs: build_and_push
    runs-on: ubuntu-latest
@@ -69,10 +58,10 @@ jobs:
           doctl registry login
 
           # Stop running container
-          # docker stop $REGISTRY/$IMAGE_NAME:${{ github.sha }}
+          docker stop $REGISTRY/$IMAGE_NAME:${{ github.sha }}
 
           # Remove old container
-          # docker rm $REGISTRY/$IMAGE_NAME:${{ github.sha }}
+          docker rm $REGISTRY/$IMAGE_NAME:${{ github.sha }}
 
           docker pull $REGISTRY/$IMAGE_NAME:${{ github.sha }}
           docker stop $IMAGE_NAME || true
