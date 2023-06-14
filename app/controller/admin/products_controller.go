@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -48,8 +47,8 @@ func IndexProducts(c echo.Context) error {
 	if categoryStr != "" {
 		category := model.Category{}
 		if err := config.Db.Where("name = ?", categoryStr).First(&category).Error; err != nil {
-			format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
-			return c.JSON(http.StatusInternalServerError, format)
+			format := res.Response(http.StatusNotFound, "error", err.Error(), nil)
+			return c.JSON(http.StatusNotFound, format)
 		}
 		query = query.Where("category_id = ?", category.ID)
 	}
@@ -87,8 +86,7 @@ func CreateProducts(c echo.Context) error {
 	// #upload file & validation image
 	file, err := c.FormFile("products_image")
 	if err != nil {
-		if err.Error() == "http: no such file" {
-			// Mengabaikan jika tidak ada file yang masuk
+		if err == http.ErrMissingFile {
 			request.ProductsImage = ""
 		} else {
 			format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
@@ -113,15 +111,8 @@ func CreateProducts(c echo.Context) error {
 
 	filename := uuid.NewString() + filepath.Ext(file.Filename)
 	savePath := filepath.Join("images", "products", filename)
-
-	dst, err := os.Create(savePath)
-	if err != nil {
-		format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
-		return c.JSON(http.StatusInternalServerError, format)
-	}
-	defer dst.Close()
-
-	_, err = io.Copy(dst, fileReader)
+	savePath = filepath.ToSlash(savePath)
+	err = gen.SaveFile(file, savePath)
 	if err != nil {
 		format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
 		return c.JSON(http.StatusInternalServerError, format)
@@ -143,11 +134,13 @@ func CreateProducts(c echo.Context) error {
 		Price:       request.Price,
 		Description: request.Description,
 	}
+
 	product.Category = category
 	if err := config.Db.Create(&product).Error; err != nil {
 		format := res.Response(http.StatusUnprocessableEntity, "error", err.Error(), nil)
 		return c.JSON(http.StatusUnprocessableEntity, format)
 	}
+
 	transformedProduct := res.TransformAdminProduct(product)
 	format := res.Response(http.StatusCreated, "success", "Added product successfully", transformedProduct)
 	return c.JSON(http.StatusCreated, format)
@@ -173,13 +166,7 @@ func DeleteProducts(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, format)
 	}
 
-	// Delete associated order items first
-	if err := config.Db.Where("product_id = ?", id).Delete(&model.OrderItems{}).Error; err != nil {
-		format := res.Response(http.StatusInternalServerError, "error", "Failed to delete associated order items", nil)
-		return c.JSON(http.StatusInternalServerError, format)
-	}
-
-	_ = os.Remove(product.Image)
+	_ = os.Remove(filepath.FromSlash(product.Image))
 
 	if err := config.Db.Where("id = ?", id).Delete(&product).Error; err != nil {
 		format := res.Response(http.StatusBadRequest, "error", err.Error(), nil)
@@ -248,6 +235,7 @@ func UpdateProducts(c echo.Context) error {
 	} else {
 		request.ProductsImage = file.Filename
 	}
+
 	if validationErrors := gen.ValidateData(request); validationErrors != nil {
 		if request.ProductsImage != "" {
 			if err != nil {
@@ -270,27 +258,12 @@ func UpdateProducts(c echo.Context) error {
 
 		filename := uuid.NewString() + filepath.Ext(file.Filename)
 		savePath := filepath.Join("images", "products", filename)
-
-		err = os.MkdirAll(filepath.Dir(savePath), os.ModePerm)
+		savePath = filepath.ToSlash(savePath)
+		err = gen.SaveFile(file, savePath)
 		if err != nil {
 			format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
 			return c.JSON(http.StatusInternalServerError, format)
 		}
-
-		// Simpan file ke path yang ditentukan
-		dst, err := os.Create(savePath)
-		if err != nil {
-			format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
-			return c.JSON(http.StatusInternalServerError, format)
-		}
-		defer dst.Close()
-
-		_, err = io.Copy(dst, fileReader)
-		if err != nil {
-			format := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
-			return c.JSON(http.StatusInternalServerError, format)
-		}
-
 		updatedProduct.Image = savePath
 		isImageUploaded = true
 	}

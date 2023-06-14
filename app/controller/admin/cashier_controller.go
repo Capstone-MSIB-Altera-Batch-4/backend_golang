@@ -59,31 +59,32 @@ func GetCashier(c echo.Context) error {
 func AddCashier(c echo.Context) error {
 	request := dto.AddCashierRequest{}
 	if err := c.Bind(&request); err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, response)
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	if err != nil {
+		response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, response)
 	}
 
 	userCode := fmt.Sprintf("%s-%d", gen.RandomStrGen(), gen.RandomIntGen())
-
-	// Generate hashed password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
-	}
-
 	cashier := model.User{
 		UserCode:  userCode,
 		Username:  request.Username,
-		Password:  string(hashedPassword),
+		Password:  string(hash),
 		Role:      request.Role,
 		CreatedAt: time.Now(),
 	}
 
 	if err := config.Db.Create(&cashier).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, response)
 	}
 
-	response := res.Response(201, "Success", "Cashier created", cashier)
-
+	format := res.TransformCashier(cashier)
+	response := res.Response(201, "Success", "Cashier created", format)
 	return c.JSON(http.StatusOK, response)
 }
 

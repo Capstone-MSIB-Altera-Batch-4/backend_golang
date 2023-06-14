@@ -33,10 +33,10 @@ func TransformResponse(order model.Order) SetOrderResponse {
 
 	for i, item := range order.Items {
 		setItems[i] = SetItemOrderResponse{
-			ID:       item.ProductID,
-			Name:     item.Products.Name,
+			ID:       item.ID,
+			Name:     item.ProductName,
 			Quantity: item.Quantity,
-			Price:    item.Products.Price,
+			Price:    item.Subtotal / item.Quantity,
 			Subtotal: item.Subtotal,
 		}
 		Subtotal += item.Subtotal
@@ -64,10 +64,10 @@ func TransformResponseDataOrder(order model.Order) SetOrderResponse {
 
 	for i, item := range order.Items {
 		setItems[i] = SetItemOrderResponse{
-			ID:       item.ProductID,
-			Name:     item.Products.Name,
+			ID:       item.ID,
+			Name:     item.ProductName,
 			Quantity: item.Quantity,
-			Price:    item.Products.Price,
+			Price:    item.Subtotal / item.Quantity,
 			Subtotal: item.Subtotal,
 		}
 

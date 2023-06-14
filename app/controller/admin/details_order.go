@@ -35,7 +35,7 @@ func IndexOrder(c echo.Context) error {
 
 	//kondisi pencarian berdasarkan order_id
 	if orderCode != "" {
-		query = query.Where("order_id LIKE ?", "%"+orderCode+"%")
+		query = query.Where("order_code LIKE ?", "%"+orderCode+"%")
 	}
 
 	//	kondisi pencarian range tanggal
@@ -76,7 +76,7 @@ func DetailOrder(c echo.Context) error {
 	ID := c.Param("id")
 
 	var order model.Order
-	if err := config.Db.Preload("Items.Products").Preload("Transaction").Where("id = ?", ID).First(&order).Error; err != nil {
+	if err := config.Db.Preload("Items").Preload("Transaction").Where("id = ?", ID).First(&order).Error; err != nil {
 		response := res.Response(404, "error", "Order not found", err.Error())
 		return c.JSON(404, response)
 	}
@@ -93,4 +93,3 @@ func DetailOrder(c echo.Context) error {
 
 	return c.JSON(200, response)
 }
-

@@ -1,6 +1,7 @@
 package routes
 
 import (
+	middleware2 "github.com/labstack/echo/v4/middleware"
 	"point-of-sale/app/controller"
 	"point-of-sale/app/controller/admin"
 	"point-of-sale/app/middleware"
@@ -9,6 +10,7 @@ import (
 )
 
 func Route(e *echo.Echo) {
+	e.Use(middleware2.CORS())
 	api := e.Group("api/v1")
 	api.Static("/images", "./images")
 	//Role cashier
@@ -18,8 +20,11 @@ func Route(e *echo.Echo) {
 	{
 		RouteCashier.GET("/order", controller.SearchItems)
 		RouteCashier.GET("/order/search", controller.SearchItemsByName)
-		RouteCashier.GET("/order/item", controller.GetItemsByID)
+		RouteCashier.GET("/order/item/:id", controller.GetItemsByID)
 		RouteCashier.POST("/checkout", controller.RequestPayment)
+
+		RouteCashier.GET("/order/category", admin.IndexCategory)
+		RouteCashier.POST("/membership", admin.AddMembership)
 	}
 
 	RouteAdmin := api.Group("/admin")
