@@ -6,6 +6,7 @@ import (
 )
 
 type SetOrderResponse struct {
+	ID          int                    `json:"id"`
 	OrderID     string                 `json:"order_id"`
 	OrderOption string                 `json:"order_option"`
 	Name        string                 `json:"name,omitempty"`
@@ -44,6 +45,7 @@ func TransformResponse(order model.Order) SetOrderResponse {
 	}
 
 	setResponse := SetOrderResponse{
+		ID:          order.ID,
 		OrderID:     order.OrderCode,
 		OrderOption: order.OrderOption,
 		Name:        order.Name,
@@ -74,6 +76,7 @@ func TransformResponseDataOrder(order model.Order) SetOrderResponse {
 	}
 
 	setResponse := SetOrderResponse{
+		ID:          order.ID,
 		OrderID:     order.OrderCode,
 		OrderOption: order.OrderOption,
 		CreatedAt:   order.CreatedAt,
