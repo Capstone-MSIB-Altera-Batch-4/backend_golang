@@ -21,6 +21,8 @@ func Route(e *echo.Echo) {
 		RouteCashier.GET("/order", controller.SearchItems)
 		RouteCashier.GET("/order/search", controller.SearchItemsByName)
 		RouteCashier.GET("/order/item/:id", controller.GetItemsByID)
+		RouteCashier.GET("/order/history", controller.OrderHistory)
+		RouteCashier.GET("/order/history/:id", controller.DetailOrderHistory)
 		RouteCashier.POST("/checkout", controller.RequestPayment)
 
 		RouteCashier.GET("/order/category", admin.IndexCategory)
