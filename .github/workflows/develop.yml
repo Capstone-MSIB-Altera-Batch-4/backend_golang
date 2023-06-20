@@ -16,8 +16,6 @@ jobs:
       - name: Checkout the repo
         uses: actions/checkout@v2
 
- 
-
       - name: Create Docker config file
         run: echo "${{ secrets.DOCKER_CONFIG_JSON }}" > $HOME/.docker/config.json
 
@@ -25,9 +23,6 @@ jobs:
         run: |
           curl -sL https://github.com/digitalocean/doctl/releases/download/v1.66.0/doctl-1.66.0-linux-amd64.tar.gz | tar -xzv
           sudo mv doctl /usr/local/bin
-
- 
-
 
       - name: Log in to DigitalOcean Container Registry
         run: doctl auth init -t ${{ secrets.REGISTRY_TOKEN }}
