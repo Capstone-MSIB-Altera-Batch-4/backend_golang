@@ -30,7 +30,7 @@ func LoginCashier(c echo.Context) error {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
-		format := res.Response(http.StatusInternalServerError, "error", "incorrect password", nil)
+		format := res.Response(http.StatusInternalServerError, "error", "incorrect password", map[string]string{"password": "incorrect password"})
 		return c.JSON(http.StatusInternalServerError, format)
 	}
 
@@ -60,7 +60,7 @@ func LoginAdmin(c echo.Context) error {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
-		format := res.Response(http.StatusInternalServerError, "error", "incorrect password", nil)
+		format := res.Response(http.StatusInternalServerError, "error", "incorrect password", map[string]string{"password": "incorrect password"})
 		return c.JSON(http.StatusInternalServerError, format)
 	}
 

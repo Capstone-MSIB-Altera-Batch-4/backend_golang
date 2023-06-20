@@ -38,7 +38,7 @@ func GetMembership(c echo.Context) error {
 
 	offset = (page - 1) * limit
 
-	if err := config.Db.Table("memberships").Offset(offset).Find(&memberships).Error; err != nil {
+	if err := config.Db.Table("memberships").Offset(offset).Limit(limit).Find(&memberships).Error; err != nil {
 		response := res.Response(http.StatusBadRequest, "error", err.Error(), nil)
 		return c.JSON(http.StatusBadRequest, response)
 	}

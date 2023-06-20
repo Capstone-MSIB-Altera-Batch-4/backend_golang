@@ -38,7 +38,7 @@ func GetCashier(c echo.Context) error {
 
 	offset = (page - 1) * limit
 
-	if err := config.Db.Offset(offset).Where("role IN ('cashier', 'kepala cashier')").Find(&cashiers).Error; err != nil {
+	if err := config.Db.Offset(offset).Where("role IN ('cashier', 'kepala cashier')").Limit(limit).Find(&cashiers).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
@@ -91,7 +91,6 @@ func AddCashier(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-
 func EditCashier(c echo.Context) error {
 	request := dto.EditCashierRequest{}
 	if err := c.Bind(&request); err != nil {
@@ -135,7 +134,6 @@ func EditCashier(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
-
 
 func DeleteCashier(c echo.Context) error {
 	id := c.Param("id")

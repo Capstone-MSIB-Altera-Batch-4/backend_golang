@@ -23,7 +23,7 @@ func SearchItems(c echo.Context) error {
 
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page <= 0 {
-		page = 0
+		page = 1
 	}
 
 	categoryQuery := config.Db.Model(&model.Category{})

@@ -2,6 +2,7 @@ package routes
 
 import (
 	middleware2 "github.com/labstack/echo/v4/middleware"
+	"net/http"
 	"point-of-sale/app/controller"
 	"point-of-sale/app/controller/admin"
 	"point-of-sale/app/middleware"
@@ -10,7 +11,13 @@ import (
 )
 
 func Route(e *echo.Echo) {
-	e.Use(middleware2.CORS())
+	config := middleware2.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, "Image-Type"},
+	}
+	e.Use(middleware2.CORSWithConfig(config))
+
 	api := e.Group("api/v1")
 	api.Static("/images", "./images")
 	//Role cashier
@@ -21,6 +28,8 @@ func Route(e *echo.Echo) {
 		RouteCashier.GET("/order", controller.SearchItems)
 		RouteCashier.GET("/order/search", controller.SearchItemsByName)
 		RouteCashier.GET("/order/item/:id", controller.GetItemsByID)
+		RouteCashier.GET("/order/history", controller.OrderHistory)
+		RouteCashier.GET("/order/history/:id", controller.DetailOrderHistory)
 		RouteCashier.POST("/checkout", controller.RequestPayment)
 
 		RouteCashier.GET("/order/category", admin.IndexCategory)
