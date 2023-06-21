@@ -9,12 +9,12 @@ import (
 )
 
 func Route(e *echo.Echo) {
-	//config := middleware2.CORSConfig{
-	//	AllowOrigins: []string{"*"},
-	//	AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
-	//	AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, "Image-Type", echo.HeaderAuthorization},
-	//}
-	//e.Use(middleware2.CORSWithConfig(config))
+	config := middleware2.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+	}
+	e.Use(middleware2.CORSWithConfig(config))
 
 	api := e.Group("api/v1")
 	api.Static("/images", "./images")
