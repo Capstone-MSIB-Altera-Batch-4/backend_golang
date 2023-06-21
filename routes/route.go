@@ -64,4 +64,5 @@ func Route(e *echo.Echo) {
 		RouteAdmin.POST("/category", admin.CreateCategory)
 		RouteAdmin.DELETE("/category/:id", admin.DeleteCategory)
 	}
+	api.GET("/CORS", admin.IndexCategory)
 }
