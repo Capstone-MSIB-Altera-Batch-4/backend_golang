@@ -25,12 +25,12 @@ func LoginCashier(c echo.Context) error {
 	}
 
 	if err := config.Db.Where("user_code = ?", request.Username).First(&user).Error; err != nil {
-		format := res.Response(http.StatusInternalServerError, "error", "user code not found", map[string]string{"username": "user code not found"})
+		format := res.Response(http.StatusInternalServerError, "error", "user code not found", nil)
 		return c.JSON(http.StatusInternalServerError, format)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
-		format := res.Response(http.StatusInternalServerError, "error", "incorrect password", map[string]string{"password": "incorrect password"})
+		format := res.Response(http.StatusInternalServerError, "error", "incorrect password", nil)
 		return c.JSON(http.StatusInternalServerError, format)
 	}
 
