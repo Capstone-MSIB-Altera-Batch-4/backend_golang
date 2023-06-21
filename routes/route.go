@@ -1,6 +1,8 @@
 package routes
 
 import (
+	middleware2 "github.com/labstack/echo/v4/middleware"
+	"net/http"
 	"point-of-sale/app/controller"
 	"point-of-sale/app/controller/admin"
 	"point-of-sale/app/middleware"
@@ -9,12 +11,12 @@ import (
 )
 
 func Route(e *echo.Echo) {
-	//config := middleware2.CORSConfig{
-	//	AllowOrigins: []string{"*"},
-	//	AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
-	//	AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, "Image-Type", echo.HeaderAuthorization},
-	//}
-	//e.Use(middleware2.CORSWithConfig(config))
+	config := middleware2.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+	}
+	e.Use(middleware2.CORSWithConfig(config))
 
 	api := e.Group("api/v1")
 	api.Static("/images", "./images")
@@ -64,4 +66,5 @@ func Route(e *echo.Echo) {
 		RouteAdmin.POST("/category", admin.CreateCategory)
 		RouteAdmin.DELETE("/category/:id", admin.DeleteCategory)
 	}
+	api.GET("/category", admin.IndexCategory)
 }
