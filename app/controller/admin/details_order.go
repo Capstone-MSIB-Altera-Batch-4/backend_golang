@@ -43,6 +43,17 @@ func IndexOrder(c echo.Context) error {
 		query = query.Where("created_at BETWEEN ? AND ?", startDate, endDate)
 	}
 
+	// kondisi pencarian sesuai dengan `start_date`
+	if startDate != "" {
+		query = query.Where("created_at >= ?", startDate)
+	}
+
+	//kondisi pencarian sesuai dengan `end_date`
+	if endDate != "" {
+		//Tambahkan kondisi pencarian sesuai dengan `end_date`
+		query = query.Where("created_at <= ?", endDate)
+	}
+
 	// Menghitung total items
 	query.Count(&totalItems)
 
