@@ -65,6 +65,12 @@ func AddMembership(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, response)
 	}
 
+	// Periksa jika salah satu data kosong
+	if request.Name == "" || request.Email == "" || request.BirthDay == "" {
+		response := res.Response(http.StatusBadRequest, "error", "Missing required data", nil)
+		return c.JSON(http.StatusBadRequest, response)
+	}
+
 	birthDay, err := time.Parse("2006-01-02", request.BirthDay)
 	if err != nil {
 		response := res.Response(http.StatusBadRequest, "error", "Invalid BirthDay format", nil)
@@ -89,9 +95,9 @@ func AddMembership(c echo.Context) error {
 	}
 
 	response := res.Response(201, "Success", "Membership created", membership)
-
 	return c.JSON(http.StatusOK, response)
 }
+
 
 func AddPoint(c echo.Context) error {
 	var (
