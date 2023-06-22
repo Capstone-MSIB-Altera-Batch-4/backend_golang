@@ -19,31 +19,46 @@ import (
 func GetCashier(c echo.Context) error {
 	var (
 		page     int
-		limit    = 10
+		limit    int
 		offset   int
 		total    int64
 		cashiers []*model.User
 	)
 
-	temp := c.QueryParam("page")
+	pageParam := c.QueryParam("page")
+	limitParam := c.QueryParam("limit")
 
-	if temp == "" {
-		return c.JSON(http.StatusBadRequest, "required paramter `page`")
+	if pageParam == "" {
+		response := res.Response(http.StatusBadRequest, "error", "required parameter 'page'", nil)
+		return c.JSON(http.StatusBadRequest, response)
 	}
 
-	page, err := strconv.Atoi(temp)
+	page, err := strconv.Atoi(pageParam)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "page must be integer")
+		response := res.Response(http.StatusBadRequest, "error", "parameter 'page' must be an integer", nil)
+		return c.JSON(http.StatusBadRequest, response)
+	}
+
+	if limitParam == "" {
+		limit = 10 // Nilai default jika parameter 'limit' tidak diberikan
+	} else {
+		limit, err = strconv.Atoi(limitParam)
+		if err != nil {
+			response := res.Response(http.StatusBadRequest, "error", "parameter 'limit' must be an integer", nil)
+			return c.JSON(http.StatusBadRequest, response)
+		}
 	}
 
 	offset = (page - 1) * limit
 
 	if err := config.Db.Offset(offset).Where("role IN ('cashier', 'kepala cashier')").Limit(limit).Find(&cashiers).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, response)
 	}
 
 	if err := config.Db.Model(&model.User{}).Where("role IN ('cashier', 'kepala cashier')").Count(&total).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
+		return c.JSON(http.StatusInternalServerError, response)
 	}
 
 	pages := res.Pagination{
