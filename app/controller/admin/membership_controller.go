@@ -109,8 +109,14 @@ func AddMembership(c echo.Context) error {
 	}
 
 	response := res.Response(201, "Success", "Membership created", membership)
-	return c.JSON(http.StatusOK, response)
+
+	// Set status kode menjadi 201 Created
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	c.Response().WriteHeader(http.StatusCreated)
+
+	return c.JSON(http.StatusCreated, response)
 }
+
 
 
 
