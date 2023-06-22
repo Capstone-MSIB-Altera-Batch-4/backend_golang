@@ -84,6 +84,13 @@ func AddMembership(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, response)
 	}
 
+	// Periksa tanggal lahir maksimal di bulan Mei 2023
+	maxDate := time.Date(2023, time.May, 31, 0, 0, 0, 0, time.UTC)
+	if birthDay.After(maxDate) {
+		response := res.Response(http.StatusBadRequest, "error", "BirthDay exceeds maximum allowed date", nil)
+		return c.JSON(http.StatusBadRequest, response)
+	}
+
 	memberCode := fmt.Sprintf("%s-%d", gen.RandomStrGen(), gen.RandomIntGen())
 	membership := model.Membership{
 		MemberCode: memberCode,
