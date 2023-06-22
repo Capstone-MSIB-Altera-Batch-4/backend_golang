@@ -94,8 +94,14 @@ func AddCashier(c echo.Context) error {
 
 	format := res.TransformCashier(cashier)
 	response := res.Response(201, "Success", "Cashier created", format)
-	return c.JSON(http.StatusOK, response)
+
+	// Set status kode menjadi 201 Created
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	c.Response().WriteHeader(http.StatusCreated)
+
+	return c.JSON(http.StatusCreated, response)
 }
+
 
 
 func EditCashier(c echo.Context) error {
