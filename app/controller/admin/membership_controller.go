@@ -18,23 +18,34 @@ import (
 func GetMembership(c echo.Context) error {
 	var (
 		page        int
-		limit       = 10
+		limit       int
 		offset      int
 		total       int64
 		memberships []*model.Membership
 	)
 
-	temp := c.QueryParam("page")
+	pageParam := c.QueryParam("page")
+	limitParam := c.QueryParam("limit")
 
-	if temp == "" {
-		response := res.Response(http.StatusBadRequest, "error", "required parameter page", nil)
+	if pageParam == "" {
+		response := res.Response(http.StatusBadRequest, "error", "required parameter 'page'", nil)
 		return c.JSON(http.StatusBadRequest, response)
 	}
 
-	page, err := strconv.Atoi(temp)
+	page, err := strconv.Atoi(pageParam)
 	if err != nil {
-		response := res.Response(http.StatusBadRequest, "error", "page must be integer", nil)
+		response := res.Response(http.StatusBadRequest, "error", "parameter 'page' must be an integer", nil)
 		return c.JSON(http.StatusBadRequest, response)
+	}
+
+	if limitParam == "" {
+		limit = 10 // Nilai default jika parameter 'limit' tidak diberikan
+	} else {
+		limit, err = strconv.Atoi(limitParam)
+		if err != nil {
+			response := res.Response(http.StatusBadRequest, "error", "parameter 'limit' must be an integer", nil)
+			return c.JSON(http.StatusBadRequest, response)
+		}
 	}
 
 	offset = (page - 1) * limit
@@ -54,10 +65,11 @@ func GetMembership(c echo.Context) error {
 		Limit:      limit,
 		TotalItems: int(total),
 	}
-	response := res.Responsedata(200, "Success", "Membership list", memberships, pages)
+	response := res.Responsedata(http.StatusOK, "Success", "Membership list", memberships, pages)
 
 	return c.JSON(http.StatusOK, response)
 }
+
 
 func AddMembership(c echo.Context) error {
 	request := dto.AddMembershipRequest{}
