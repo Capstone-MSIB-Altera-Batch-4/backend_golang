@@ -9,6 +9,7 @@ import (
 	"point-of-sale/utils/gen"
 	"point-of-sale/utils/res"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -71,6 +72,12 @@ func AddMembership(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, response)
 	}
 
+	// Periksa format email
+	if !strings.Contains(request.Email, "@") || !strings.HasSuffix(request.Email, ".com") {
+		response := res.Response(http.StatusBadRequest, "error", "Invalid email format", nil)
+		return c.JSON(http.StatusBadRequest, response)
+	}
+
 	birthDay, err := time.Parse("2006-01-02", request.BirthDay)
 	if err != nil {
 		response := res.Response(http.StatusBadRequest, "error", "Invalid BirthDay format", nil)
@@ -97,6 +104,7 @@ func AddMembership(c echo.Context) error {
 	response := res.Response(201, "Success", "Membership created", membership)
 	return c.JSON(http.StatusOK, response)
 }
+
 
 
 func AddPoint(c echo.Context) error {
