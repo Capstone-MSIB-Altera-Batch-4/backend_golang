@@ -63,6 +63,12 @@ func AddCashier(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, response)
 	}
 
+	// Periksa jika salah satu data kosong
+	if request.Username == "" || request.Password == "" || request.Role == "" {
+		response := res.Response(http.StatusBadRequest, "error", "Missing required data", nil)
+		return c.JSON(http.StatusBadRequest, response)
+	}
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 	if err != nil {
 		response := res.Response(http.StatusInternalServerError, "error", err.Error(), nil)
@@ -90,6 +96,7 @@ func AddCashier(c echo.Context) error {
 	response := res.Response(201, "Success", "Cashier created", format)
 	return c.JSON(http.StatusOK, response)
 }
+
 
 func EditCashier(c echo.Context) error {
 	request := dto.EditCashierRequest{}
