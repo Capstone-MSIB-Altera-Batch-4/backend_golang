@@ -41,7 +41,8 @@ func LoginCashier(c echo.Context) error {
 	format := res.TransformLoginResponse(user, token)
 	resp := res.Response(http.StatusOK, "success", "successfully login", format)
 
-	// Set status kode menjadi 201 Created
+
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	c.Response().WriteHeader(http.StatusOK)
 	return c.JSON(http.StatusOK, resp)
 }
@@ -74,8 +75,7 @@ func LoginAdmin(c echo.Context) error {
 	format := res.TransformLoginResponse(user, token)
 	resp := res.Response(http.StatusOK, "success", "successfully login", format)
 
-	// Set status kode menjadi 201 Created
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	c.Response().WriteHeader(http.StatusOK)
-	// ...
 	return c.JSON(http.StatusOK, resp)
 }
