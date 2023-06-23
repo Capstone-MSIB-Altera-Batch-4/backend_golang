@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"errors"
 	"fmt"
 	"gorm.io/gorm"
 	"net/http"
@@ -169,36 +170,42 @@ func DeleteCashier(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	// Association delete
+	// Check if Transaction exists
 	transaction := model.Transaction{}
 	if err := config.Db.Where("user_id = ?", intID).First(&transaction).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.JSON(http.StatusInternalServerError, err.Error())
+		}
+	}
+
+	if err := config.Db.Where("user_id = ?", transaction.UserID).Delete(&transaction).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.JSON(http.StatusInternalServerError, err.Error())
+		}
+	}
+
+	// Check if OrderItems exist
+	orderItems := []model.OrderItems{}
+	if err := config.Db.Where("order_id = ?", transaction.OrderID).Delete(&orderItems).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.JSON(http.StatusInternalServerError, err.Error())
+		}
+	}
+
+	// Check if Order exists
+	order := model.Order{}
+	if err := config.Db.Where("id = ?", transaction.OrderID).Delete(&order).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.JSON(http.StatusInternalServerError, err.Error())
+		}
+	}
+
+	// Delete User
+	if err := config.Db.Where("id = ?", intID).Delete(&model.User{}).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	if err := config.Db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Where("user_id = ?", intID).Delete(&model.Transaction{}).Error; err != nil {
-			return err
-		}
-
-		if err := tx.Where("order_id = ?", transaction.OrderID).Delete(&model.OrderItems{}).Error; err != nil {
-			return err
-		}
-
-		if err := tx.Where("id = ?", transaction.OrderID).Delete(&model.Order{}).Error; err != nil {
-			return err
-		}
-
-		if err := tx.Where("id = ?", intID).Delete(&model.User{}).Error; err != nil {
-			return err
-		}
-
-		return nil
-	}); err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
-	}
-
-	response := res.Response(200, "Success", "Cashier deleted", "")
-
+	response := res.Response(http.StatusOK, "Success", "Cashier deleted", nil)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -206,7 +213,7 @@ func GetCashierByUserCode(c echo.Context) error {
 	userCode := c.QueryParam("user_code")
 
 	cashier := &model.User{}
-	if err := config.Db.Where("role IN ('cashier', 'kepala cashier') AND user_code = ?", userCode).First(&cashier).Error; err != nil {
+	if err := config.Db.Where("role IN ('cashier', 'kepala cashier') AND user_code = ?", userCode).Delete(&cashier).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
