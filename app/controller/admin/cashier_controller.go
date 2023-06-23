@@ -2,6 +2,7 @@ package admin
 
 import (
 	"fmt"
+	"gorm.io/gorm"
 	"net/http"
 	"point-of-sale/app/model"
 	"point-of-sale/config"
@@ -117,8 +118,6 @@ func AddCashier(c echo.Context) error {
 	return c.JSON(http.StatusCreated, response)
 }
 
-
-
 func EditCashier(c echo.Context) error {
 	request := dto.EditCashierRequest{}
 	if err := c.Bind(&request); err != nil {
@@ -170,7 +169,31 @@ func DeleteCashier(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	if err := config.Db.Where("id = ?", intID).Delete(&model.User{}).Error; err != nil {
+	// Association delete
+	transaction := model.Transaction{}
+	if err := config.Db.Where("user_id = ?", intID).First(&transaction).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	if err := config.Db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("user_id = ?", intID).Delete(&model.Transaction{}).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Where("order_id = ?", transaction.OrderID).Delete(&model.OrderItems{}).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Where("id = ?", transaction.OrderID).Delete(&model.Order{}).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Where("id = ?", intID).Delete(&model.User{}).Error; err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
