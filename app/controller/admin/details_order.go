@@ -37,13 +37,9 @@ func IndexOrder(c echo.Context) error {
 	}
 
 	if startDate != "" && endDate != "" {
-		if startDate == endDate {
-			endDate = fmt.Sprintf("%s 23:59:59", endDate)
-			startDate = fmt.Sprintf("%s 00:00:00", startDate)
-			query = query.Where("created_at >= ? AND created_at <= ?", startDate, endDate)
-		} else {
-			query = query.Where("created_at BETWEEN ? AND ?", startDate, endDate)
-		}
+		endDate = fmt.Sprintf("%s 23:59:59", endDate)
+		startDate = fmt.Sprintf("%s 00:00:00", startDate)
+		query = query.Where("created_at >= ? AND created_at <= ?", startDate, endDate)
 	}
 
 	if startDate != "" {
