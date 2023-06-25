@@ -133,21 +133,11 @@ func EditCashier(c echo.Context) error {
 
 	now := time.Now()
 	cashier := model.User{
-		ID:        intID,
-		Username:  request.Username,
 		Role:      request.Role,
 		UpdatedAt: now,
 	}
 
-	if request.Password != "" {
-		hash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, err.Error())
-		}
-		cashier.Password = string(hash)
-	}
-
-	if err := config.Db.Updates(&cashier).Error; err != nil {
+	if err := config.Db.Model(&model.User{}).Where("id = ?", intID).Updates(cashier).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
