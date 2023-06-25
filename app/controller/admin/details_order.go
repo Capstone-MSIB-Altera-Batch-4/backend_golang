@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"fmt"
 	"net/http"
 	"point-of-sale/app/model"
 	"point-of-sale/config"
@@ -17,47 +18,40 @@ func IndexOrder(c echo.Context) error {
 	limitStr := c.QueryParam("limit")
 	pageStr := c.QueryParam("page")
 
-	// default limit
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil || limit <= 0 {
-		limit = 10 // Nilai default jika tidak ada, tidak valid, atau terjadi kesalahan konversi
+		limit = 10
 	}
 
-	// default page
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page <= 0 {
-		page = 1 //Nilai default jika tidak ada, tidak valid atau terjadi kesalahan
+		page = 1
 	}
 
 	var orders []model.Order
 	var totalItems int64
 	query := config.Db.Model(&model.Order{})
 
-	//kondisi pencarian berdasarkan order_id
 	if orderCode != "" {
 		query = query.Where("order_code LIKE ?", "%"+orderCode+"%")
 	}
 
-	//	kondisi pencarian range tanggal
 	if startDate != "" && endDate != "" {
-		query = query.Where("created_at BETWEEN ? AND ?", startDate, endDate)
+		endDate = fmt.Sprintf("%s 23:59:59", endDate)
+		startDate = fmt.Sprintf("%s 00:00:00", startDate)
+		query = query.Where("created_at >= ? AND created_at <= ?", startDate, endDate)
 	}
 
-	// kondisi pencarian sesuai dengan `start_date`
 	if startDate != "" {
 		query = query.Where("created_at >= ?", startDate)
 	}
 
-	//kondisi pencarian sesuai dengan `end_date`
 	if endDate != "" {
-		//Tambahkan kondisi pencarian sesuai dengan `end_date`
 		query = query.Where("created_at <= ?", endDate)
 	}
 
-	// Menghitung total items
 	query.Count(&totalItems)
 
-	//menghitung offset berdasarkan halaman saat ini
 	offset := (page - 1) * limit
 
 	if err := query.Offset(offset).Limit(limit).Preload("Transaction").Find(&orders).Error; err != nil {
@@ -65,14 +59,12 @@ func IndexOrder(c echo.Context) error {
 		return c.JSON(500, response)
 	}
 
-	// Transform orders to the desired response format
 	var transformedOrders []res.SetOrderResponse
 	for _, order := range orders {
 		transformedOrder := res.TransformResponseDataOrder(order)
 		transformedOrders = append(transformedOrders, transformedOrder)
 	}
 
-	// Calculate total pages
 	pagination := res.Pagination{
 		Page:       page,
 		Limit:      limit,
