@@ -3,11 +3,11 @@ name: POS
 on:
   push:
     branches:
-      - develop
+      - main
 
 env:
   REGISTRY: "registry.digitalocean.com/private-registry"
-  IMAGE_NAME: "develop"
+  IMAGE_NAME: "back-end"
 
 jobs:
   build_and_push:
@@ -64,4 +64,4 @@ jobs:
 
 
           # Run a new container from a new image
-          docker run -d --name $IMAGE_NAME --network mynetwork -p 8000:8000 --publish-all $REGISTRY/$IMAGE_NAME:${{ github.sha }}
+          docker run -d --name $IMAGE_NAME --network mynetwork -p 8070:8070 --publish-all $REGISTRY/$IMAGE_NAME:${{ github.sha }}
